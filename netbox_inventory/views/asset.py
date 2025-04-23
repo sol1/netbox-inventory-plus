@@ -218,7 +218,7 @@ class AssetBulkEditView(generic.BulkEditView):
 
 
 @register_model_view(models.Asset, "bulk_scan", path="scan", detail=False)
-class AssetBulkScanView(generic.BulkEditView):
+class AssetBulkScanView(generic.BulkImportView):
     queryset = models.Asset.objects.all()
     filterset = filtersets.AssetFilterSet
     table = tables.AssetTable
@@ -258,7 +258,6 @@ class AssetBulkScanView(generic.BulkEditView):
             obj.save()
             updated_objects.append(obj)
 
-            self.post_save_operations(form, obj)
         # Rebuild the tree for MPTT models
         if issubclass(self.queryset.model, MPTTModel):
             self.queryset.model.objects.rebuild()
