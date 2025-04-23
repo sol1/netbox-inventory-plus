@@ -223,6 +223,7 @@ class AssetBulkScanView(generic.BulkImportView):
     queryset = models.Asset.objects.all()
     filterset = filtersets.AssetFilterSet
     table = tables.AssetTable
+    scan_table  = tables.AssetBulkScanTable
 
     form = forms.AssetBulkScanForm
     model_form = forms.AssetImportForm  # <— use the CSV‐import form here
@@ -246,7 +247,7 @@ class AssetBulkScanView(generic.BulkImportView):
 
         form  = self.form()
         queryset = self.queryset.filter(pk__in=pk_list)
-        table = self.table(queryset, request=request)
+        table = self.scan_table(queryset, request=request)
         return render(request, self.scan_template_name, {
             "form":  form,
             "model": self.queryset.model,
@@ -266,7 +267,7 @@ class AssetBulkScanView(generic.BulkImportView):
         if "data" not in request.POST:
             if not scan_form.is_valid():
                 queryset = self.queryset.filter(pk__in=pk_list)
-                table = self.table(queryset, request=request)
+                table = self.scan_table(queryset, request=request)
                 return render(request, self.scan_template_name, {
                     "form":  scan_form,
                     "model": self.queryset.model,

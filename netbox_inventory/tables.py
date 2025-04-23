@@ -411,6 +411,21 @@ class AssetTable(NetBoxTable):
         )
 
 
+class AssetBulkScanTable(NetBoxTable):
+    id            = tables.Column(verbose_name='ID')
+    name          = tables.Column(linkify=True)
+    kind          = tables.Column(accessor='get_kind_display', orderable=False)
+    manufacturer  = tables.Column(accessor='hardware_type__manufacturer', linkify=True)
+    hardware_type = tables.Column(linkify=True, verbose_name='Hardware Type')
+    serial        = tables.Column(verbose_name='Serial Number')
+    asset_tag     = tables.Column(verbose_name='Asset Tag')
+
+    class Meta(NetBoxTable.Meta):
+        model          = Asset
+        fields         = ('id','name','kind','manufacturer','hardware_type','serial','asset_tag')
+        default_columns= fields
+
+
 #
 # Deliveries
 #
