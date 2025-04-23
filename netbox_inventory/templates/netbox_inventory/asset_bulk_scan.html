@@ -22,14 +22,9 @@
       {{ field }}
     {% endfor %}
 
-    {# Scan textarea #}
-    <div class="field-group mb-3">
-      {% render_field form.serial_numbers %}
-    </div>
-
     <div class="btn-float-group-right">
       <a href="{{ return_url }}" class="btn btn-outline-secondary btn-float">{% trans "Cancel" %}</a>
-      <button type="submit" class="btn btn-primary">{% trans "Next" %}</button>
+      <button type="submit" class="btn btn-primary">Submit</button>
     </div>
   </form>
 {% endblock %}

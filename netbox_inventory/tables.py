@@ -420,6 +420,8 @@ class AssetBulkScanTable(NetBoxTable):
     serial        = tables.Column(verbose_name='Serial Number')
     asset_tag     = tables.Column(verbose_name='Asset Tag')
 
+    actions = None
+
     class Meta(NetBoxTable.Meta):
         model          = Asset
         fields         = ('id','name','kind','manufacturer','hardware_type','serial','asset_tag')
