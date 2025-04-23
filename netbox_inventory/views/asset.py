@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from mptt.models import MPTTModel
 
 from core.signals import clear_events
+from netbox.choices import CSVDelimiterChoices, ImportFormatChoices
 from netbox.views import generic
 from utilities.exceptions import AbortRequest, PermissionsViolation
 from utilities.forms import ConfirmationForm, restrict_form_fields
@@ -222,139 +223,20 @@ class AssetBulkScanView(generic.BulkImportView):
     queryset = models.Asset.objects.all()
     filterset = filtersets.AssetFilterSet
     table = tables.AssetTable
+
     form = forms.AssetBulkScanForm
-    template_name = "netbox_inventory/asset_bulk_scan.html"
+    model_form = forms.AssetImportForm  # <— use the CSV‐import form here
+    model = models.Asset
 
-    def _update_objects(self, form, request):
-        updated_objects = []
+    scan_template_name = "netbox_inventory/asset_bulk_scan.html"
+    import_template_name = "netbox_inventory/asset_bulk_import.html"
 
-        # Parse serial numbers, one per line
-        if form.cleaned_data["serial_numbers"]:
-            serial_numbers = form.cleaned_data["serial_numbers"].splitlines()
-            # Remove empty lines
-            serial_numbers = [sn.strip() for sn in serial_numbers if sn.strip()]
-            # Remove duplicates
-            serial_numbers = list(set(serial_numbers))
+    def get_template_names(self):
+        if self.request.method == "GET" or "data" not in self.request.POST:
+            return [self.scan_template_name]
+        return [self.import_template_name]
 
-        # If the number of serial numbers is not equal to the number of selected objects, raise an error
-        if len(serial_numbers) != len(form.cleaned_data["pk"]):
-            raise ValidationError(
-                _(
-                    "The number of serial numbers must match the number of selected assets."
-                )
-            )
-
-        # Iterate over the selected objects and update their fields
-        # with the corresponding serial numbers
-        for i, obj in enumerate(self.queryset.filter(pk__in=form.cleaned_data["pk"])):
-            # Take a snapshot of change-logged models
-
-            if hasattr(obj, "snapshot"):
-                obj.snapshot()
-            setattr(obj, "serial", serial_numbers[i])
-            obj.serial_number = serial_numbers[i]
-
-            obj.full_clean()
-            obj.save()
-            updated_objects.append(obj)
-
-        # Rebuild the tree for MPTT models
-        if issubclass(self.queryset.model, MPTTModel):
-            self.queryset.model.objects.rebuild()
-        return updated_objects
-
-    def _apply(self, form, request, model, logger):
-        try:
-            with transaction.atomic():
-                updated_objects = self._update_objects(form, request)
-
-                # Enforce object-level permissions
-                object_count = self.queryset.filter(
-                    pk__in=[obj.pk for obj in updated_objects]
-                ).count()
-                if object_count != len(updated_objects):
-                    raise PermissionsViolation
-
-            if updated_objects:
-                msg = f"Updated {len(updated_objects)} {model._meta.verbose_name_plural}"
-                logger.info(msg)
-                messages.success(self.request, msg)
-
-            return redirect(self.get_return_url(request))
-
-        except ValidationError as e:
-            messages.error(self.request, ", ".join(e.messages))
-            clear_events.send(sender=self)
-
-        except (AbortRequest, PermissionsViolation) as e:
-            logger.debug(e.message)
-            form.add_error(None, e.message)
-            clear_events.send(sender=self)
-
-    def _super_post(self, request, **kwargs):
-        logger = logging.getLogger("netbox.views.BulkEditView")
-        model = self.queryset.model
-
-        # If we are editing *all* objects in the queryset, replace the PK list with all matched objects.
-        if request.POST.get("_all") and self.filterset is not None:
-            pk_list = self.filterset(
-                request.GET, self.queryset.values_list("pk", flat=True), request=request
-            ).qs
-        else:
-            pk_list = request.POST.getlist("pk")
-
-        # Include the PK list as initial data for the form
-        initial_data = {"pk": pk_list}
-
-        # Check for other contextual data needed for the form. We avoid passing all of request.GET because the
-        # filter values will conflict with the bulk edit form fields.
-        # TODO: Find a better way to accomplish this
-        if "device" in request.GET:
-            initial_data["device"] = request.GET.get("device")
-        elif "device_type" in request.GET:
-            initial_data["device_type"] = request.GET.get("device_type")
-        elif "virtual_machine" in request.GET:
-            initial_data["virtual_machine"] = request.GET.get("virtual_machine")
-
-        form = self.form(request.POST, initial=initial_data)
-        restrict_form_fields(form, request.user)
-
-        if "_apply" in request.POST:
-            if form.is_valid():
-                logger.debug("Form validation was successful")
-                self._apply(form, request, model, logger)
-            else:
-                logger.debug("Form validation failed")
-
-        # Retrieve objects being edited
-        table = self.table(self.queryset.filter(pk__in=pk_list), orderable=False)
-        if not table.rows:
-            messages.warning(
-                request,
-                _("No {object_type} were selected.").format(
-                    object_type=model._meta.verbose_name_plural
-                ),
-            )
-            return redirect(self.get_return_url(request))
-
-        return render(
-            request,
-            self.template_name,
-            {
-                "model": model,
-                "form": form,
-                "table": table,
-                "return_url": self.get_return_url(request),
-                **self.get_extra_context(request),
-            },
-        )
-
-    def post(self, request, **kwargs):
-        """Override post method to check if assets are protected from editing"""
-
-        logger = logging.getLogger("netbox.views.BulkEditView")
-
-        # If we are editing *all* objects in the queryset, replace the PK list with all matched objects.
+    def get(self, request, *args, **kwargs):
         if request.POST.get("_all") and self.filterset is not None:
             pk_list = self.filterset(
                 request.GET, self.queryset.values_list("pk", flat=True)
@@ -362,64 +244,66 @@ class AssetBulkScanView(generic.BulkImportView):
         else:
             pk_list = request.POST.getlist("pk")
 
-        # Include the PK list as initial data for the form
-        initial_data = {"pk": pk_list}
-        protected_fields_by_tags = get_tags_and_edit_protected_asset_fields()
-
-        errors = []
-        protected_assets = []
-
-        if "_apply" not in request.POST:
-            return self._super_post(request, **kwargs)
-
-        form = self.form(request.POST, initial=initial_data)
-        restrict_form_fields(form, request.user)
-
-        if not form.is_valid():
-            return self._super_post(request, **kwargs)
-
-        nullified_fields = set(request.POST.getlist("_nullify"))
-
+        form  = self.form()
         queryset = self.queryset.filter(pk__in=pk_list)
+        table = self.table(queryset, request=request)
+        return render(request, self.scan_template_name, {
+            "form":  form,
+            "model": self.queryset.model,
+            "table": table,
+        })
 
-        for asset in queryset:
-            asset_tags = set(asset.tags.all().values_list("slug", flat=True))
-            intersection_of_tags = set(asset_tags).intersection(
-                protected_fields_by_tags.keys()
-            )
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("_all") and self.filterset is not None:
+            pk_list = self.filterset(
+                request.GET, self.queryset.values_list("pk", flat=True)
+            ).qs
+        else:
+            pk_list = request.POST.getlist("pk")
 
-            # Check if asset is protected from editing
-            for tag in intersection_of_tags:
-                # TODO: Check if custom fields can be protected
-                protected_fields = set(protected_fields_by_tags[tag])
+        scan_form = self.form(request.POST)
 
-                modified_fields = set(form.changed_data)
-                nullable = set(form.nullable_fields).intersection(set(nullified_fields))
+        if "data" not in request.POST:
+            if not scan_form.is_valid():
+                queryset = self.queryset.filter(pk__in=pk_list)
+                table = self.table(queryset, request=request)
+                return render(request, self.scan_template_name, {
+                    "form":  scan_form,
+                    "model": self.queryset.model,
+                    "table": table,
+                })
 
-                if modified_fields.intersection(
-                    protected_fields
-                ) or nullable.intersection(protected_fields):
-                    break
+            try:
+                payload = scan_form.get_csv_data()
+            except ValidationError as exc:
+                for message in exc.messages:
+                    messages.error(request, message)
+                queryset = self.queryset.filter(pk__in=pk_list)
+                table = self.table(queryset, request=request)
+                return render(request, self.scan_template_name, {
+                    "form":  scan_form,
+                    "model": self.queryset.model,
+                    "table": table,
+                })
 
-                protected_assets.append(asset)
+            post = request.POST.copy()
+            post["data"] = payload
+            post["format"] = ImportFormatChoices.AUTO
+            post["csv_delimiter"] = CSVDelimiterChoices.COMMA
+            request.POST = post
 
-                fields = modified_fields.intersection(protected_fields).union(
-                    nullable.intersection(protected_fields)
-                )
-                errors.append(
-                    "Cannot edit asset {} fields protected by tag {}: {}.".format(
-                        asset,
-                        tag,
-                        ",".join(fields),
-                    )
-                )
-        if errors:
-            error_msg_protected_assets = f'Edit failed for all assets. Because of trying to modify protected fields on assets: {", ".join(map(str, set(protected_assets)))}.'
-            logger.info(errors + [error_msg_protected_assets])
-            messages.warning(request, " ".join(errors))
-            messages.warning(request, error_msg_protected_assets)
-            return redirect(self.get_return_url(request))
-        return self._super_post(request, **kwargs)
+        try:
+            return super().post(request, *args, **kwargs)
+        except Exception as exc:
+            for message in exc.messages:
+                messages.error(request, message)
+            queryset = self.queryset.filter(pk__in=pk_list)
+            table = self.table(queryset, request=request)
+            return render(request, self.scan_template_name, {
+                "form":  scan_form,
+                "model": self.queryset.model,
+                "table": table,
+            })
 
 
 @register_model_view(models.Asset, "bulk_delete", path="delete", detail=False)

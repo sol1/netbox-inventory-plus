@@ -217,24 +217,34 @@ class AssetBulkScanForm(forms.Form):
         help_text="Scan barcode or manually enter serial numbers.",
         label="Serial numbers",
     )
-
-    # asset_tags = BigTextField(
-    #     required=True,
-    #     help_text='Scan or manually enter asset tags.',
-    #     label='Asset tags',
-    # )
-
     pk = forms.ModelMultipleChoiceField(
-        queryset=None, widget=forms.MultipleHiddenInput  # Set from self.model on init
+        queryset=None,
+        widget=forms.MultipleHiddenInput  # Set from self.model on init
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields["pk"].queryset = self.model.objects.all()
 
     model = Asset
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["pk"].queryset = self.model.objects.all()
+
+    def get_csv_data(self):
+        serials = [
+            s.strip()
+            for s in self.cleaned_data["serial_numbers"].splitlines()
+            if s.strip()
+        ]
+        pks = list(self.cleaned_data["pk"].values_list("pk", flat=True))
+
+        if len(serials) != len(pks):
+            raise forms.ValidationError(
+                "Number of scanned serials must equal number of selected assets."
+            )
+
+        rows = ["id,serial"] + [
+            f"{pk},{serial}" for pk, serial in zip(pks, serials)
+        ]
+        return "\n".join(rows)
 
 class AssetImportForm(NetBoxModelImportForm):
     hardware_kind = CSVChoiceField(
