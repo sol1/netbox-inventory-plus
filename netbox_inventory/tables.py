@@ -1,8 +1,7 @@
 import django_tables2 as tables
+from dcim.tables import DeviceTypeTable, ModuleTypeTable, RackTypeTable
 from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
-
-from dcim.tables import DeviceTypeTable, ModuleTypeTable, RackTypeTable
 from netbox.tables import NetBoxTable, columns
 from tenancy.tables import ContactsColumnMixin
 from utilities.tables import register_table_column
@@ -415,12 +414,43 @@ class AssetBulkScanTable(NetBoxTable):
     id            = tables.Column(verbose_name='ID')
     name          = tables.Column(linkify=True)
     kind          = tables.Column(accessor='get_kind_display', orderable=False)
-    manufacturer  = tables.Column(accessor='hardware_type__manufacturer', linkify=True)
-    hardware_type = tables.Column(linkify=True, verbose_name='Hardware Type')
-    serial        = tables.Column(verbose_name='Serial Number')
-    asset_tag     = tables.Column(verbose_name='Asset Tag')
+
+    # Render these from annotated fields for proper ordering
+    manufacturer  = tables.Column(accessor='manufacturer_name', linkify=True)
+    hardware_type = tables.Column(accessor='hardware_type_model', linkify=True, verbose_name='Hardware Type')
+
+    serial        = tables.TemplateColumn(
+                       template_name="netbox_inventory/widgets/table_input.html",
+                       verbose_name="Serial Number",
+                       orderable=False,
+                   )
+    asset_tag     = tables.TemplateColumn(
+                       template_name="netbox_inventory/widgets/table_input.html",
+                       verbose_name="Asset Tag",
+                       orderable=False,
+                   )
 
     actions = None
+
+    def __init__(self, *args, **kwargs):
+        # Pre‑annotate the queryset with coalesced fields for sorting
+        if args and hasattr(args[0], 'annotate'):
+            qs = args[0].annotate(
+                manufacturer_name=Coalesce(
+                    "device_type__manufacturer__name",
+                    "module_type__manufacturer__name",
+                    "inventoryitem_type__manufacturer__name",
+                    "rack_type__manufacturer__name",
+                ),
+                hardware_type_model=Coalesce(
+                    "device_type__model",
+                    "module_type__model",
+                    "inventoryitem_type__model",
+                    "rack_type__model",
+                ),
+            )
+            args = (qs,) + args[1:]
+        super().__init__(*args, **kwargs)
 
     class Meta(NetBoxTable.Meta):
         model          = Asset

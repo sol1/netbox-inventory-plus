@@ -1,5 +1,6 @@
 import logging
 
+from core.signals import clear_events
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
@@ -7,8 +8,6 @@ from django.shortcuts import redirect, render
 from django.template import Template
 from django.utils.translation import gettext as _
 from mptt.models import MPTTModel
-
-from core.signals import clear_events
 from netbox.choices import CSVDelimiterChoices, ImportFormatChoices
 from netbox.views import generic
 from utilities.exceptions import AbortRequest, PermissionsViolation
