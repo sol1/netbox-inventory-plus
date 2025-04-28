@@ -30,6 +30,7 @@ __all__ = (
     "AssetBulkImportView",
     "AssetBulkEditView",
     "AssetBulkDeleteView",
+    "AssetBulkScanView",
 )
 
 
@@ -242,7 +243,10 @@ class AssetBulkScanView(generic.BulkImportView):
                 request.GET, self.queryset.values_list("pk", flat=True)
             ).qs
         else:
-            pk_list = request.POST.getlist("pk")
+            pk_list = (
+                request.POST.getlist('pk')
+                or request.session.get('asset_bulk_scan_pks', [])
+            )
 
         form  = self.form()
         queryset = self.queryset.filter(pk__in=pk_list)
@@ -260,6 +264,8 @@ class AssetBulkScanView(generic.BulkImportView):
             ).qs
         else:
             pk_list = request.POST.getlist("pk")
+
+        request.session['asset_bulk_scan_pks'] = pk_list
 
         scan_form = self.form(request.POST)
 
