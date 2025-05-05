@@ -310,6 +310,12 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         null=True,
         verbose_name='Warranty End',
     )
+    eol_date = models.DateField(
+        help_text='Date when this asset is no longer supported',
+        blank=True,
+        null=True,
+        verbose_name='End of Life Date',
+    )
 
     comments = models.TextField(
         blank=True,
@@ -327,6 +333,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         'delivery',
         'warranty_start',
         'warranty_end',
+        'eol_date',
         'tenant',
         'contact',
         'storage_location',
@@ -417,6 +424,10 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         return self.storage_location
 
     @property
+    def current_date(self):
+        return date.today()
+
+    @property
     def warranty_remaining(self):
         """
         How many days are left in warranty period.
@@ -454,6 +465,32 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if not self.warranty_start or not self.warranty_end:
             return None
         return int(100 * (self.warranty_elapsed / self.warranty_total))
+
+    @property
+    def eol_remaining(self):
+        """
+        How many days are left in time period before EOL.
+        Returns negative duration if EOL is reached
+        Return None if eol_date not defined
+        """
+        if self.eol_date:
+            return self.eol_date - date.today()
+        return None
+
+    @property
+    def eol_progress(self):
+        """
+        Percentage of time elapsed until EOL.
+        Returns > 100 if EOL has passed, < 0 if EOL is far in the future, and None
+        if eol_date is not set.
+        """
+        if not self.eol_date:
+            return None
+        total_duration = (self.eol_date - self.current_date).days
+        elapsed_duration = (self.current_date - self.current_date).days  # Always 0
+        if total_duration <= 0:
+            return 100  # EOL has passed
+        return int(100 * (elapsed_duration / total_duration))
 
     def clean(self):
         self.clean_delivery()

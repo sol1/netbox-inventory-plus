@@ -54,6 +54,43 @@ WARRANTY_PROGRESSBAR = """
 {% endwith wp %}
 """
 
+EOL_PROGRESSBAR = """
+{% with record.eol_date as eol_date %}
+{% with record.current_date as current_date %}
+{% with record.eol_remaining as eol_remaining %}
+{% with settings.PLUGINS_CONFIG.netbox_inventory.asset_eol_warning_days as wthresh %}
+
+{% if record.eol_progress is None %}
+  {{ ""|placeholder }}
+{% elif record.eol_progress >= 100 %}
+  <div class="progress" role="progressbar">
+    <div class="progress-bar progress-bar-striped text-bg-danger" style="width:100%;">
+      Expired {{ record.eol_date|timesince|split:','|first }} ago
+    </div>
+  </div>
+{% else %}
+  <div
+    class="progress"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="{{ record.eol_progress }}"
+  >
+    <div
+      class="progress-bar text-bg-{% if settings.PLUGINS_CONFIG.netbox_inventory.asset_eol_warning_days and record.eol_remaining.days < settings.PLUGINS_CONFIG.netbox_inventory.asset_eol_warning_days %}warning{% else %}success{% endif %}"
+      style="width: {{ record.eol_progress }}%;"
+    ></div>
+    <span class="justify-content-center d-flex align-items-center position-absolute text-body-emphasis w-100 h-100">
+      {{ record.eol_date|timeuntil|split:','|first }}
+    </span>
+  </div>
+{% endif %}
+
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+"""
 
 class AssetInfoExtension(PluginTemplateExtension):
     def left_page(self):
@@ -61,6 +98,7 @@ class AssetInfoExtension(PluginTemplateExtension):
         asset = Asset.objects.filter(**{self.kind: object}).first()
         context = {'asset': asset}
         context['warranty_progressbar'] = Template(WARRANTY_PROGRESSBAR)
+        context['eol_progressbar'] = Template(EOL_PROGRESSBAR)
         return self.render(
             'netbox_inventory/inc/asset_info.html', extra_context=context
         )
