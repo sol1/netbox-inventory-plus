@@ -503,6 +503,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
+        self.sync_hardware_eol()
         return super().save(*args, **kwargs)
 
     def validate_hardware_types(self):
@@ -653,6 +654,34 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
                         'purchase': 'The selected purchase is not associated with the delivery.'
                     }
                 )
+
+    def sync_hardware_eol(self):
+        """
+        Sync eol_date from hardware to asset if plugin setting is enabled.
+        """
+        if not get_plugin_setting('sync_hardware_eol_date'):
+            return
+
+        old_hw = get_prechange_field(self, self.kind)
+        new_hw = getattr(self, self.kind)
+        if old_hw:
+            old_hw.snapshot()
+        if new_hw:
+            new_hw.snapshot()
+
+        if new_hw and old_hw != new_hw:
+            model_to_type_field = {
+                'device': 'device_type',
+                'module': 'module_type',
+                'inventoryitem': 'inventoryitem_type',
+                'rack': 'rack_type',
+            }
+
+            model_name = new_hw._meta.model_name
+            type_field = model_to_type_field.get(model_name)
+
+            if type_field:
+                self.eol_date = getattr(new_hw, type_field).cf['eol_date']
 
     def clean_warranty_dates(self):
         if (

@@ -29,6 +29,7 @@ class NetBoxInventoryConfig(PluginConfig):
         'used_status_name': 'used',
         'used_additional_status_names': [],
         'sync_hardware_serial_asset_tag': False,
+        'sync_hardware_eol_date': True,
         'asset_sync_ignored_custom_fields': [],
         'asset_import_create_purchase': False,
         'asset_import_create_device_type': False,
