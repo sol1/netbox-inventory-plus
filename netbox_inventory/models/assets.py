@@ -679,6 +679,9 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             model_name = new_hw._meta.model_name
             type_field = model_to_type_field.get(model_name)
 
+            if 'eol_date' not in getattr(new_hw, type_field).cf:
+                return
+
             if type_field:
                 self.eol_date = getattr(new_hw, type_field).cf['eol_date']
 

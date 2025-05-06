@@ -139,7 +139,7 @@ def update_asset_eol_dates(sender, instance, **kwargs):
     if 'eol_date' not in instance.cf:
         return
 
-    eol_date = instance.cf['eol_date']
+    eol_date = instance.cf.get('eol_date', None)
     if sender == DeviceType:
         related_hw_field = 'device__device_type'
     elif sender == ModuleType:
