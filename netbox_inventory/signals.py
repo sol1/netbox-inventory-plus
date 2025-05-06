@@ -144,8 +144,8 @@ def update_asset_eol_dates(sender, instance, **kwargs):
         related_hw_field = 'device__device_type'
     elif sender == ModuleType:
         related_hw_field = 'module__module_type'
-    elif sender == InventoryItemType:
-        related_hw_field = 'inventoryitem__inventoryitem_type'
+    # elif sender == InventoryItemType:
+    #     related_hw_field = 'inventoryitem__inventoryitem_type'
     elif sender == RackType:
         related_hw_field = 'rack__rack_type'
     else:

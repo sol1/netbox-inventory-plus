@@ -502,7 +502,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
-        self.sync_hardware_eol()
+        # self.sync_hardware_eol()
         return super().save(*args, **kwargs)
 
     def validate_hardware_types(self):
@@ -672,7 +672,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             model_to_type_field = {
                 'device': 'device_type',
                 'module': 'module_type',
-                'inventoryitem': 'inventoryitem_type',
+                # 'inventoryitem': 'inventoryitem_types',
                 'rack': 'rack_type',
             }
 
