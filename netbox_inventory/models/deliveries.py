@@ -1,7 +1,6 @@
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
-
 from netbox.models import NetBoxModel
 from netbox.models.features import ContactsMixin
 
@@ -31,16 +30,16 @@ class Supplier(NetBoxModel, ContactsMixin):
         blank=True,
     )
 
-    clone_fields = ['description', 'comments']
+    clone_fields = ["description", "comments"]
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_inventory:supplier', args=[self.pk])
+        return reverse("plugins:netbox_inventory:supplier", args=[self.pk])
 
 
 class BOM(NetBoxModel, ContactsMixin):
@@ -52,7 +51,7 @@ class BOM(NetBoxModel, ContactsMixin):
     status = models.CharField(
         max_length=30,
         choices=BOMStatusChoices,
-        help_text='Status of BOM',
+        help_text="Status of BOM",
     )
     description = models.CharField(
         max_length=200,
@@ -62,19 +61,19 @@ class BOM(NetBoxModel, ContactsMixin):
         blank=True,
     )
 
-    clone_fields = ['status', 'description', 'comments']
+    clone_fields = ["status", "description", "comments"]
 
     class Meta:
-        ordering = ['name']
-        verbose_name = 'BOM'
-        verbose_name_plural = 'BOMs'
-        unique_together = (('name'),)
+        ordering = ["name"]
+        verbose_name = "BOM"
+        verbose_name_plural = "BOMs"
+        unique_together = (("name"),)
 
     def get_status_color(self):
         return BOMStatusChoices.colors.get(self.status)
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_inventory:bom', args=[self.pk])
@@ -87,27 +86,27 @@ class Purchase(NetBoxModel):
 
     name = models.CharField(max_length=100)
     supplier = models.ForeignKey(
-        help_text='Legal entity this purchase was made at',
-        to='netbox_inventory.Supplier',
+        help_text="Legal entity this purchase was made at",
+        to="netbox_inventory.Supplier",
         on_delete=models.PROTECT,
-        related_name='purchases',
+        related_name="purchases",
         blank=False,
         null=False,
     )
     boms = models.ManyToManyField(
-        help_text='BOMs that this purchase is part of',
-        to='netbox_inventory.BOM',
-        related_name='purchases',
+        help_text="BOMs that this purchase is part of",
+        to="netbox_inventory.BOM",
+        related_name="purchases",
         blank=True,
         verbose_name='BOMs',
     )
     status = models.CharField(
         max_length=30,
         choices=PurchaseStatusChoices,
-        help_text='Status of purchase',
+        help_text="Status of purchase",
     )
     date = models.DateField(
-        help_text='Date when this purchase was made',
+        help_text="Date when this purchase was made",
         blank=True,
         null=True,
     )
@@ -119,20 +118,20 @@ class Purchase(NetBoxModel):
         blank=True,
     )
 
-    clone_fields = ['supplier', 'boms', 'date', 'status', 'description', 'comments']
+    clone_fields = ["supplier", "boms", "date", "status", "description", "comments"]
 
     class Meta:
-        ordering = ['supplier', 'name']
-        unique_together = (('supplier', 'name'),)
+        ordering = ["supplier", "name"]
+        unique_together = (("supplier", "name"),)
 
     def get_status_color(self):
         return PurchaseStatusChoices.colors.get(self.status)
 
     def __str__(self):
-        return f'{self.supplier} {self.name}'
+        return f"{self.supplier} {self.name}"
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_inventory:purchase', args=[self.pk])
+        return reverse("plugins:netbox_inventory:purchase", args=[self.pk])
 
 
 class Delivery(NetBoxModel):
@@ -149,15 +148,15 @@ class Delivery(NetBoxModel):
         blank=False,
     )
     date = models.DateField(
-        help_text='Date when this delivery was made',
+        help_text="Date when this delivery was made",
         blank=True,
         null=True,
     )
     receiving_contact = models.ForeignKey(
-        help_text='Contact that accepted this delivery',
-        to='tenancy.Contact',
+        help_text="Contact that accepted this delivery",
+        to="tenancy.Contact",
         on_delete=models.PROTECT,
-        related_name='deliveries',
+        related_name="deliveries",
         blank=True,
         null=True,
     )
@@ -207,4 +206,4 @@ class Delivery(NetBoxModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('plugins:netbox_inventory:delivery', args=[self.pk])
+        return reverse("plugins:netbox_inventory:delivery", args=[self.pk])

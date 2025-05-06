@@ -3,7 +3,6 @@ from datetime import date
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
-
 from netbox.models import NestedGroupModel, NetBoxModel
 from netbox.models.features import ImageAttachmentsMixin
 
@@ -740,4 +739,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
                 name='unique_asset_tag',
                 violation_error_message='Asset with this Asset Tag and no Owner already exists.',
             ),
+        )
+        permissions = (
+            ('bulk_scan', 'Can bulk scan assets'),
         )
