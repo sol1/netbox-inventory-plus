@@ -14,7 +14,7 @@ from utilities.forms import ConfirmationForm, restrict_form_fields
 from utilities.views import register_model_view
 
 from .. import filtersets, forms, models, tables
-from ..template_content import WARRANTY_PROGRESSBAR
+from ..template_content import WARRANTY_PROGRESSBAR, EOL_PROGRESSBAR
 from ..utils import (
     get_tags_and_edit_protected_asset_fields,
     get_tags_that_protect_asset_from_deletion,
@@ -38,7 +38,8 @@ class AssetView(generic.ObjectView):
 
     def get_extra_context(self, request, instance):
         context = super().get_extra_context(request, instance)
-        context["warranty_progressbar"] = Template(WARRANTY_PROGRESSBAR)
+        context['warranty_progressbar'] = Template(WARRANTY_PROGRESSBAR)
+        context['eol_progressbar'] = Template(EOL_PROGRESSBAR)
         return context
 
 

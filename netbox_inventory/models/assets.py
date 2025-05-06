@@ -309,6 +309,12 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         null=True,
         verbose_name='Warranty End',
     )
+    eol_date = models.DateField(
+        help_text='Date when this asset is no longer supported',
+        blank=True,
+        null=True,
+        verbose_name='End of Life Date',
+    )
 
     comments = models.TextField(
         blank=True,
@@ -326,6 +332,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         'delivery',
         'warranty_start',
         'warranty_end',
+        'eol_date',
         'tenant',
         'contact',
         'storage_location',
@@ -416,6 +423,10 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         return self.storage_location
 
     @property
+    def current_date(self):
+        return date.today()
+
+    @property
     def warranty_remaining(self):
         """
         How many days are left in warranty period.
@@ -454,6 +465,32 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             return None
         return int(100 * (self.warranty_elapsed / self.warranty_total))
 
+    @property
+    def eol_remaining(self):
+        """
+        How many days are left in time period before EOL.
+        Returns negative duration if EOL is reached
+        Return None if eol_date not defined
+        """
+        if self.eol_date:
+            return self.eol_date - date.today()
+        return None
+
+    @property
+    def eol_progress(self):
+        """
+        Percentage of time elapsed until EOL.
+        Returns > 100 if EOL has passed, < 0 if EOL is far in the future, and None
+        if eol_date is not set.
+        """
+        if not self.eol_date:
+            return None
+        total_duration = (self.eol_date - self.current_date).days
+        elapsed_duration = (self.current_date - self.current_date).days  # Always 0
+        if total_duration <= 0:
+            return 100  # EOL has passed
+        return int(100 * (elapsed_duration / total_duration))
+
     def clean(self):
         self.clean_delivery()
         self.clean_warranty_dates()
@@ -465,6 +502,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
+        # self.sync_hardware_eol()
         return super().save(*args, **kwargs)
 
     def validate_hardware_types(self):
@@ -615,6 +653,37 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
                         'purchase': 'The selected purchase is not associated with the delivery.'
                     }
                 )
+
+    def sync_hardware_eol(self):
+        """
+        Sync eol_date from hardware to asset if plugin setting is enabled.
+        """
+        if not get_plugin_setting('sync_hardware_eol_date'):
+            return
+
+        old_hw = get_prechange_field(self, self.kind)
+        new_hw = getattr(self, self.kind)
+        if old_hw:
+            old_hw.snapshot()
+        if new_hw:
+            new_hw.snapshot()
+
+        if new_hw and old_hw != new_hw:
+            model_to_type_field = {
+                'device': 'device_type',
+                'module': 'module_type',
+                # 'inventoryitem': 'inventoryitem_types',
+                'rack': 'rack_type',
+            }
+
+            model_name = new_hw._meta.model_name
+            type_field = model_to_type_field.get(model_name)
+
+            if 'eol_date' not in getattr(new_hw, type_field).cf:
+                return
+
+            if type_field:
+                self.eol_date = getattr(new_hw, type_field).cf['eol_date']
 
     def clean_warranty_dates(self):
         if (

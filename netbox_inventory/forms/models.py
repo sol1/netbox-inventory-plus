@@ -159,6 +159,7 @@ class AssetForm(NetBoxModelForm):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             name='Purchase',
         ),
         FieldSet("tenant", "contact_group", "contact", name="Assigned to"),
@@ -185,6 +186,7 @@ class AssetForm(NetBoxModelForm):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             'tenant',
             'contact_group',
             'contact',
@@ -194,8 +196,9 @@ class AssetForm(NetBoxModelForm):
             'storage_site',
         )
         widgets = {
-            "warranty_start": DatePicker(),
-            "warranty_end": DatePicker(),
+            'warranty_start': DatePicker(),
+            'warranty_end': DatePicker(),
+            'eol_date': DatePicker(),
         }
 
     def __init__(self, *args, **kwargs):

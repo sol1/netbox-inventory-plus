@@ -127,6 +127,7 @@ def asset_set_new_hw(asset, hw):
         if asset_type != hw_type:
             setattr(hw, asset.kind + '_type', asset_type)
             hw_save = True
+
     # for inventory items also set manufacturer and part_number
     if asset.inventoryitem_type:
         if hw.manufacturer != asset.inventoryitem_type.manufacturer:

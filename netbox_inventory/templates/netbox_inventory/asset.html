@@ -184,6 +184,16 @@
               {% include warranty_progressbar with record=object %}
             </td>
           </tr>
+          <tr>
+            <th scope="row">EOL date</th>
+            <td>{{ object.eol_date|isodate|placeholder }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Time til EOL</th>
+            <td>
+              {% include eol_progressbar with record=object %}
+            </td>
+          </tr>
         </table>
       </div>
       {% include 'inc/panels/tags.html' %}
