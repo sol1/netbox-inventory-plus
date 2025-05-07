@@ -498,11 +498,11 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         self.validate_hardware()
         self.update_status()
         self.update_location()
+        self.sync_hardware_eol()
         return super().clean()
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
-        # self.sync_hardware_eol()
         return super().save(*args, **kwargs)
 
     def validate_hardware_types(self):
@@ -611,6 +611,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             return None
         old_hw = get_prechange_field(self, self.kind)
         new_hw = getattr(self, self.kind)
+        print(f"old_hw: {old_hw} and new_hw: {new_hw}")
         if old_hw:
             old_hw.snapshot()
         if new_hw:
@@ -656,34 +657,30 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
     def sync_hardware_eol(self):
         """
-        Sync eol_date from hardware to asset if plugin setting is enabled.
+        Sync asset's eol_date from corresponding hardware type if plugin setting is enabled.
+        Do not sync if eol_date is set manually and the hardware type is not set again.
         """
         if not get_plugin_setting('sync_hardware_eol_date'):
             return
 
-        old_hw = get_prechange_field(self, self.kind)
-        new_hw = getattr(self, self.kind)
-        if old_hw:
-            old_hw.snapshot()
-        if new_hw:
-            new_hw.snapshot()
+        old_eol_date = get_prechange_field(self, 'eol_date')
+        new_eol_date = getattr(self, 'eol_date')
+        if old_eol_date and isinstance(old_eol_date, str):
+            old_eol_date = date.fromisoformat(old_eol_date)
+        if new_eol_date and isinstance(new_eol_date, str):
+            new_eol_date = date.fromisoformat(new_eol_date)
 
-        if new_hw and old_hw != new_hw:
-            model_to_type_field = {
-                'device': 'device_type',
-                'module': 'module_type',
-                # 'inventoryitem': 'inventoryitem_types',
-                'rack': 'rack_type',
-            }
+        print(f"old_eol_date: {old_eol_date} and new_eol_date: {new_eol_date}")
+        if old_eol_date != new_eol_date:
+            # eol_date changed manually, do not sync
+            print("eol_date changed manually, do not sync")
+            return
 
-            model_name = new_hw._meta.model_name
-            type_field = model_to_type_field.get(model_name)
-
-            if 'eol_date' not in getattr(new_hw, type_field).cf:
-                return
-
-            if type_field:
-                self.eol_date = getattr(new_hw, type_field).cf['eol_date']
+        hw_type = self.hardware_type
+        if hw_type:
+            eol_date = hw_type.cf.get('eol_date') if hasattr(hw_type, 'cf') else None
+            print(f"eol_date: {eol_date}")
+            self.eol_date = eol_date if eol_date else None
 
     def clean_warranty_dates(self):
         if (
