@@ -244,7 +244,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
 class AssetBulkScanForm(forms.Form):
     serial_numbers = BigTextField(
         required=True,
-        help_text="Scan barcode or manually enter serial numbers.",
+        help_text="Scan barcode or manually enter serial numbers. Ensure scanner terminator is set to newline (cr).",
         label="Serial numbers",
     )
 

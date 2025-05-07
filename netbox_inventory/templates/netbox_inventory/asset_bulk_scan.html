@@ -51,64 +51,34 @@ Context:
           {{ field }}
         {% endfor %}
 
-        {% if form.fieldsets %}
+        {# Render all fields #}
+        {% for field in form.visible_fields %}
+          {#{% render_field field %}#}
+          <div class="row mb-3{% if field.errors %} has-errors{% endif %}">
 
-          {# Render grouped fields according to declared fieldsets #}
-          {% for fieldset in form.fieldsets %}
-            {% render_fieldset form fieldset %}
-          {% endfor %}
-
-          {# Render tag add/remove fields #}
-          {% if form.add_tags and form.remove_tags %}
-            <div class="field-group mb-5">
-              <div class="row">
-                <h2 class="col-9 offset-3">{% trans "Tags" %}</h2>
-              </div>
-              {% render_field form.add_tags %}
-              {% render_field form.remove_tags %}
+            {# Render the field label (if any), except for checkboxes #}
+            <div class="col-sm-3 text-lg-end">
+              <label for="{{ field.id_for_label }}" class="col-form-label d-inline-block{% if field.field.required %} required{% endif %}">
+                {{ field.label }}
+              </label>
             </div>
-          {% endif %}
-
-          {# Render custom fields #}
-          {% if form.custom_fields %}
-            <div class="field-group mb-5">
-              <div class="row">
-                <h2 class="col-9 offset-3">{% trans "Custom Fields" %}</h2>
+          
+            {# Render the field itself #}
+            <div class="col">
+              {{ field }}
+              <div id="serial-counter-container" style="margin-top: 0.5rem;">
+                <small id="serial_counter"></small>
               </div>
-              {% render_custom_fields form %}
+              <span class="form-text">{{ field.help_text|safe }}</span>
+
             </div>
-          {% endif %}
-
-          {# Render comments #}
-          {% if form.comments %}
-            <div class="field-group mb-5">
-              <div class="row">
-                <h2 class="col-9 offset-3">{% trans "Comments" %}</h2>
-              </div>
-              {% render_field form.comments bulk_nullable=True %}
-            </div>
-          {% endif %}
-
-        {% else %}
-
-          {# Render all fields #}
-          {% for field in form.visible_fields %}
-            {% if field.name in form.nullable_fields %}
-              {% render_field field bulk_nullable=True %}
-            {% else %}
-              {% render_field field %}
-            {% endif %}
-          {% endfor %}
-
-        {% endif %}
+          
+          </div>
+        {% endfor %}
 
         <div class="btn-float-group-right">
           <a href="{{ return_url }}" class="btn btn-outline-secondary btn-float">{% trans "Cancel" %}</a>
           <button type="submit" name="_apply" class="btn btn-primary">{% trans "Apply" %}</button>
-
-          <div id="serial-counter-container" style="margin-top: 0.5rem; text-align: right;">
-            <small id="serial_counter"></small>
-          </div>
         </div>
         
       </div>
@@ -134,11 +104,14 @@ Context:
           const lines = textArea.value.split('\n').filter(line => line.trim() !== '');
           counterSpan.textContent = lines.length + " of " + assetCount + " entries";
           if (lines.length === assetCount) {
-              counterSpan.style.color = '#39ff39';
+              counterSpan.style.color = 'var(--tblr-form-valid-color)';
+              counterSpan.style.fontWeight = 'normal';
           } else if (lines.length > assetCount) {
-              counterSpan.style.color = '#ff3939';
+              counterSpan.style.color = 'var(--tblr-form-invalid-color)';
+              counterSpan.style.fontWeight = 'bold';
           } else {
               counterSpan.style.color = 'inherit';
+              counterSpan.style.fontWeight = 'normal';
           }
       }
       if (textArea) {
