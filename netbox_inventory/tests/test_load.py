@@ -11,7 +11,7 @@ class NetboxInventoryVersionTestCase(SimpleTestCase):
     """
 
     def test_version(self):
-        assert __version__ == '3.3.1'
+        assert __version__ == '3.3.2'
 
 
 class AppTest(APITestCase):
