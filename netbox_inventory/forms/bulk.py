@@ -767,8 +767,8 @@ class PurchaseBulkEditForm(NetBoxModelBulkEditForm):
 class DeliveryImportForm(NetBoxModelImportForm):
     purchases = CSVModelMultipleChoiceField(
         queryset=Purchase.objects.all(),
-        to_field_name="id",
-        help_text="Purchase that this delivery is part of. It must exist when importing.",
+        to_field_name="name",
+        help_text="Purchase(s) that this delivery is part of. Purchases must exist before importing.",
         required=True,
     )
     delivery_site = CSVModelChoiceField(
@@ -781,7 +781,7 @@ class DeliveryImportForm(NetBoxModelImportForm):
         queryset=Location.objects.all(),
         to_field_name='name',
         help_text='Location where this delivery is to be received. It must exist before import.',
-        required=False,
+        required=True,
     )
     receiving_contact = CSVModelChoiceField(
         queryset=Contact.objects.all(),
