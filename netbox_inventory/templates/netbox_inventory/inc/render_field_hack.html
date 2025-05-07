@@ -1,0 +1,36 @@
+{% load form_helpers %}
+{% load helpers %}
+{% load i18n %}
+
+<div class="row mb-3{% if field.errors %} has-errors{% endif %}">
+
+    {# Render the field label (if any), except for checkboxes #}
+    <div class="col-sm-3 text-lg-end">
+      <label for="{{ field.id_for_label }}" class="col-form-label d-inline-block required">
+        {{ label }}
+      </label>
+    </div>
+  
+    {# Render the field itself #}
+    <div class="col{% if field|widget_type == 'checkboxinput' %} offset-3{% endif %}">
+      
+      {{ field }}
+  
+      {# Display any error messages #}
+      {% if field.errors %}
+        <div class="form-text text-danger">
+          {% for error in field.errors %}{{ error }}{% if not forloop.last %}<br />{% endif %}{% endfor %}
+        </div>
+      {% elif field.field.required %}
+        <div class="invalid-feedback">
+          {% trans "This field is required" %}.
+        </div>
+      {% endif %}
+  
+      {# Help text #}
+      {% if field.help_text and field|widget_type != 'checkboxinput' %}
+        <span class="form-text">{{ field.help_text|safe }}</span>
+      {% endif %}
+    </div>
+  
+  </div>

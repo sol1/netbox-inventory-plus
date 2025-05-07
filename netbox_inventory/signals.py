@@ -124,6 +124,7 @@ def update_assets_status_on_pickup(instance, **kwargs):
             status=stored_status, storage_location=instance.location
         )
 
+
 @receiver(post_save, sender=DeviceType)
 @receiver(post_save, sender=ModuleType)
 @receiver(post_save, sender=InventoryItemType)
