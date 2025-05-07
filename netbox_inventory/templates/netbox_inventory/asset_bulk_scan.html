@@ -58,19 +58,18 @@ Context:
 
             {# Render the field label (if any), except for checkboxes #}
             <div class="col-sm-3 text-lg-end">
-              <label for="{{ field.id_for_label }}" class="col-form-label d-inline-block{% if field.field.required %} required{% endif %}">
+              <label for="{{ field.id_for_label }}" class="col-form-label d-inline-block{% if field.field.required %} required{% endif %}" style="padding-bottom: 0.5rem;">
                 {{ field.label }}
               </label>
+              <div id="serial-counter-container">
+                <small id="serial_counter"></small>
+              </div>
             </div>
           
             {# Render the field itself #}
             <div class="col">
               {{ field }}
-              <div id="serial-counter-container" style="margin-top: 0.5rem;">
-                <small id="serial_counter"></small>
-              </div>
               <span class="form-text">{{ field.help_text|safe }}</span>
-
             </div>
           
           </div>
@@ -106,12 +105,15 @@ Context:
           if (lines.length === assetCount) {
               counterSpan.style.color = 'var(--tblr-form-valid-color)';
               counterSpan.style.fontWeight = 'normal';
+              textArea.style.borderColor = 'var(--tblr-border-active-color)';
           } else if (lines.length > assetCount) {
               counterSpan.style.color = 'var(--tblr-form-invalid-color)';
               counterSpan.style.fontWeight = 'bold';
+              textArea.style.borderColor = 'var(--tblr-form-invalid-color)';
           } else {
               counterSpan.style.color = 'inherit';
               counterSpan.style.fontWeight = 'normal';
+              textArea.style.borderColor = 'var(--tblr-form-invalid-color)';
           }
       }
       if (textArea) {
