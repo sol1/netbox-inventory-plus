@@ -95,8 +95,10 @@ def close_bom_if_all_assets_delivered(instance, **kwargs):
     """
     Close BOM if all Assets are delivered.
     """
+
     bom = instance.bom
-    if bom:
+    # check if bom is set and not already closed
+    if bom and bom.status != 'closed':
         all_assets_delivered = not bom.assets.filter(
             Q(delivery__isnull=True)
         ).exists()

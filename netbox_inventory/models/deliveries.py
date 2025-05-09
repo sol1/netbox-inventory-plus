@@ -191,11 +191,6 @@ class Delivery(NetBoxModel):
         if self.delivery_location:
             return self.delivery_location.site
 
-    def clean(self):
-        super().clean()
-        if self.pk and self.purchases.count() == 0:
-            raise ValidationError('A delivery must have at least one purchase.')
-
     class Meta:
         ordering = ['name']
         unique_together = (('name'),)
