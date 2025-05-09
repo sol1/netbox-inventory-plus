@@ -1,5 +1,9 @@
 import logging
 
+from django.db.models import Q
+from django.db.models.signals import post_save, pre_delete, pre_save
+from django.dispatch import receiver
+
 from dcim.models import (
     Device,
     DeviceType,
@@ -9,9 +13,6 @@ from dcim.models import (
     Rack,
     RackType,
 )
-from django.db.models import Q
-from django.db.models.signals import post_save, pre_delete, pre_save
-from django.dispatch import receiver
 from utilities.exceptions import AbortRequest
 
 from .models import Asset, Delivery, InventoryItemType, Transfer

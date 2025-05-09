@@ -3,6 +3,7 @@ from datetime import date
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+
 from netbox.models import NestedGroupModel, NetBoxModel
 from netbox.models.features import ImageAttachmentsMixin
 
