@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.db.models import ForeignKey, ManyToManyField
 from django.shortcuts import redirect
 from django.urls import reverse
-
 from netbox.views import generic
 from utilities.query import count_related
 
@@ -90,7 +89,7 @@ class BulkAssignView(generic.ObjectListView):
                 obj = self.queryset.get(pk=obj.pk)
                 setattr(obj, related_field, related_instance)
                 obj._in_bulk_assignment = True
-                obj.clean()
+                obj.full_clean()
                 obj.save()
                 obj._in_bulk_assignment = False
         elif isinstance(field_object, ManyToManyField):
@@ -99,7 +98,7 @@ class BulkAssignView(generic.ObjectListView):
                 obj = self.queryset.get(pk=obj.pk)
                 getattr(obj, related_field).add(related_instance)
                 obj._in_bulk_assignment = True
-                obj.clean()
+                obj.full_clean()
                 obj.save()
                 obj._in_bulk_assignment = False
         else:

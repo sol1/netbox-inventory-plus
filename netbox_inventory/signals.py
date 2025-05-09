@@ -1,9 +1,5 @@
 import logging
 
-from django.db.models import Q
-from django.db.models.signals import post_save, pre_delete, pre_save
-from django.dispatch import receiver
-
 from dcim.models import (
     Device,
     DeviceType,
@@ -13,6 +9,9 @@ from dcim.models import (
     Rack,
     RackType,
 )
+from django.db.models import Q
+from django.db.models.signals import post_save, pre_delete, pre_save
+from django.dispatch import receiver
 from utilities.exceptions import AbortRequest
 
 from .models import Asset, Delivery, InventoryItemType, Transfer
@@ -96,15 +95,17 @@ def close_bom_if_all_assets_delivered(instance, **kwargs):
     """
     Close BOM if all Assets are delivered.
     """
-    if instance.bom:
-        all_assets_delivered = not instance.bom.assets.filter(
+    bom = instance.bom
+    if bom:
+        all_assets_delivered = not bom.assets.filter(
             Q(delivery__isnull=True)
         ).exists()
         if all_assets_delivered:
-            instance.bom.status = 'closed'
-            instance.bom.save()
+            bom.status = 'closed'
+            bom.full_clean()
+            bom.save()
             logger.info(
-                f"BOM {instance.bom} marked as 'Closed' because all associated assets are delivered."
+                f"BOM {bom} marked as 'Closed' because all associated assets are delivered."
             )
 
 
@@ -155,4 +156,5 @@ def update_asset_eol_dates(sender, instance, **kwargs):
     assets_to_update = Asset.objects.filter(**{related_hw_field: instance})
     for asset in assets_to_update:
         asset.eol_date = eol_date
+        asset.full_clean()
         asset.save()
