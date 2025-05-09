@@ -232,6 +232,7 @@ class AssetSerializer(NetBoxModelSerializer):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             'comments',
             'tags',
             'custom_fields',
