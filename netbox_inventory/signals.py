@@ -145,17 +145,17 @@ def update_asset_eol_dates(sender, instance, **kwargs):
 
     eol_date = instance.cf.get('eol_date', None)
     if sender == DeviceType:
-        related_hw_field = 'device__device_type'
+        hw_field = 'device_type'
     elif sender == ModuleType:
-        related_hw_field = 'module__module_type'
+        hw_field = 'module_type'
     # elif sender == InventoryItemType:
-    #     related_hw_field = 'inventoryitem__inventoryitem_type'
+    #     hw_field = 'inventoryitem_type'
     elif sender == RackType:
-        related_hw_field = 'rack__rack_type'
+        hw_field = 'rack_type'
     else:
         return
 
-    assets_to_update = Asset.objects.filter(**{related_hw_field: instance})
+    assets_to_update = Asset.objects.filter(**{hw_field: instance})
     for asset in assets_to_update:
         asset.eol_date = eol_date
         asset.full_clean()

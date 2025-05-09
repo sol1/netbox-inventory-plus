@@ -169,6 +169,9 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     warranty_end = forms.DateField(
         label="Warranty end", required=False, widget=DatePicker()
     )
+    eol_date = forms.DateField(
+        label="EOL date", required=False, widget=DatePicker()
+    )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         help_text=Asset._meta.get_field("tenant").help_text,
@@ -218,6 +221,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             name='Purchase',
         ),
         FieldSet("tenant", "contact_group", "contact", name="Assigned to"),
@@ -400,6 +404,7 @@ class AssetImportForm(NetBoxModelImportForm):
             "transfer",
             "warranty_start",
             "warranty_end",
+            "eol_date",
             "comments",
             "tenant",
             "contact",

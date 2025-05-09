@@ -334,7 +334,7 @@ class DeliveryForm(NetBoxModelForm):
     delivery_location = DynamicModelChoiceField(
         queryset=Location.objects.all(),
         help_text=Delivery._meta.get_field('delivery_location').help_text,
-        required=True,
+        required=False,
         query_params={
             'site_id': '$delivery_site',
         },

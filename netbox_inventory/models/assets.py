@@ -611,7 +611,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             return None
         old_hw = get_prechange_field(self, self.kind)
         new_hw = getattr(self, self.kind)
-        print(f"old_hw: {old_hw} and new_hw: {new_hw}")
         if old_hw:
             old_hw.snapshot()
         if new_hw:
@@ -670,16 +669,13 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if new_eol_date and isinstance(new_eol_date, str):
             new_eol_date = date.fromisoformat(new_eol_date)
 
-        print(f"old_eol_date: {old_eol_date} and new_eol_date: {new_eol_date}")
         if old_eol_date != new_eol_date:
             # eol_date changed manually, do not sync
-            print("eol_date changed manually, do not sync")
             return
 
         hw_type = self.hardware_type
         if hw_type:
             eol_date = hw_type.cf.get('eol_date') if hasattr(hw_type, 'cf') else None
-            print(f"eol_date: {eol_date}")
             self.eol_date = eol_date if eol_date else None
 
     def clean_warranty_dates(self):
