@@ -72,10 +72,10 @@
           {% if perms.netbox_inventory.add_bom %}
             <div class="card-actions">
               <a href="{% url 'plugins:netbox_inventory:purchase_create_bom' purchase_id=object.pk %}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Add New BOM
+                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New BOM
               </a>
               <a href="{% url 'plugins:netbox_inventory:bom_bulk_assign' %}?related_type=purchase&related_id={{ object.pk }}&related_name={{ object.name }}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Bulk Assign BOMs
+                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Assign Existing BOMs
               </a>
             </div>
           {% endif %}
@@ -88,10 +88,10 @@
           {% if perms.netbox_inventory.add_delivery %}
             <div class="card-actions">
               <a href="{% url 'plugins:netbox_inventory:delivery_add' %}?purchases={{ object.pk }}&return_url={{ object.get_absolute_url }}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Add New Delivery
+                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New Delivery
               </a>
               <a href="{% url 'plugins:netbox_inventory:delivery_bulk_assign' %}?related_type=purchase&related_id={{ object.pk }}&related_name={{ object.name }}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Bulk Assign Deliveries
+                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Assign Existing Deliveries
               </a>
             </div>
           {% endif %}
@@ -104,10 +104,10 @@
           {% if perms.netbox_inventory.add_asset %}
             <div class="card-actions">
               <a href="{% url 'plugins:netbox_inventory:asset_add' %}?purchase={{ object.pk }}&return_url={{ object.get_absolute_url }}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Add New Asset
+                <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New Asset
               </a>
               <a href="{% url 'plugins:netbox_inventory:asset_bulk_assign' %}?related_type=purchase&related_id={{ object.pk }}&related_name={{ object.name }}{% for bom in object.boms.all %}&bom_id={{ bom.pk }}{% endfor %}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Bulk Assign Assets
+                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Assign Existing Assets
               </a>
             </div>
           {% endif %}
