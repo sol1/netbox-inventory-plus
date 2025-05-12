@@ -1,7 +1,5 @@
 from netbox.views import misc
 
-from .. import models
-
 __all__ = (
     'OverviewView',
 )
