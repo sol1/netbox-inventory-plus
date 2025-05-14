@@ -6,7 +6,7 @@ from django.urls import reverse
 from netbox.views import generic
 from utilities.query import count_related
 
-from .. import filtersets, models, tables
+from .. import filtersets, forms, models, tables
 
 __all__ = (
     'BulkAssignView',
@@ -32,6 +32,8 @@ class BulkAssignView(generic.ObjectListView):
 
     queryset = None
     table = None
+    filterset = None
+    filterset_form = None
     template_name = 'netbox_inventory/bulk_assign.html'
     related_mapping = {}
     """
@@ -174,6 +176,7 @@ class AssignToAssetView(BulkAssignView):
     )
     table = tables.AssetTable
     filterset = filtersets.AssetFilterSet
+    filterset_form = forms.AssetFilterForm
     related_mapping = {
         'bom': (models.BOM, 'bom'),
         'delivery': (models.Delivery, 'delivery'),
@@ -193,6 +196,7 @@ class AssignToDeliveryView(BulkAssignView):
     )
     table = tables.DeliveryTable
     filterset = filtersets.DeliveryFilterSet
+    filterset_form = forms.DeliveryFilterForm
     related_mapping = {
         'purchase': (models.Purchase, 'purchases'),
     }
@@ -210,6 +214,7 @@ class AssignToPurchaseView(BulkAssignView):
     )
     table = tables.PurchaseTable
     filterset = filtersets.PurchaseFilterSet
+    filterset_form = forms.PurchaseFilterForm
     related_mapping = {
         'bom': (models.BOM, 'boms'),
     }
@@ -232,6 +237,7 @@ class AssignBOMsToPurchaseView(BulkAssignRelatedView):
     )
     table = tables.BOMTable
     filterset = filtersets.BOMFilterSet
+    filterset_form = forms.BOMFilterForm
     related_mapping = {
         'purchase': (models.Purchase, 'boms'),
     }
@@ -249,6 +255,7 @@ class AssignPurchasesToDeliveryView(BulkAssignRelatedView):
     )
     table = tables.PurchaseTable
     filterset = filtersets.PurchaseFilterSet
+    filterset_form = forms.PurchaseFilterForm
     related_mapping = {
         'delivery': (models.Delivery, 'purchases'),
     }
