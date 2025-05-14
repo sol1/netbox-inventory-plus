@@ -1,5 +1,5 @@
 from netbox.views import generic
-from tenancy.views import ObjectContactsView
+from netbox.views.generic import ObjectContactsView
 from utilities.query import count_related
 from utilities.views import register_model_view
 
