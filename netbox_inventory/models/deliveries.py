@@ -1,4 +1,5 @@
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 
 from netbox.models import NetBoxModel
@@ -114,11 +115,28 @@ class Purchase(NetBoxModel):
         max_length=200,
         blank=True,
     )
+    delivery_instructions = models.TextField(
+        blank=True,
+        help_text = (
+            'Delivery information given to the supplier including address, contacts and other requirements.<br>'
+            '<i class="mdi mdi-information-outline"></i> '
+            '<a href="{url}" target="_blank" tabindex="-1">Markdown</a> syntax is supported'
+        ).format(url=static('docs/reference/markdown/')),
+        verbose_name="Delivery Instructions",
+    )
     comments = models.TextField(
         blank=True,
     )
 
-    clone_fields = ["supplier", "boms", "date", "status", "description", "comments"]
+    clone_fields = [
+        "supplier",
+        "boms",
+        "date",
+        "status",
+        "description",
+        "delivery_instructions",
+        "comments"
+    ]
 
     class Meta:
         ordering = ["supplier", "name"]

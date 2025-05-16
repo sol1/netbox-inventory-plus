@@ -3,7 +3,7 @@ from netbox.forms import NetBoxModelForm
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities.forms.fields import CommentField, DynamicModelChoiceField, SlugField
 from utilities.forms.rendering import FieldSet
-from utilities.forms.widgets import DatePicker
+from utilities.forms.widgets import DatePicker, MarkdownWidget
 
 from netbox_inventory.choices import HardwareKindChoices
 
@@ -302,6 +302,7 @@ class PurchaseForm(NetBoxModelForm):
             'date',
             'description',
             'tags',
+            'delivery_instructions',
             name='Purchase',
         ),
     )
@@ -315,11 +316,13 @@ class PurchaseForm(NetBoxModelForm):
             "status",
             "date",
             "description",
+            "delivery_instructions",
             "comments",
             "tags",
         )
         widgets = {
             "date": DatePicker(),
+            "delivery_instructions": MarkdownWidget(),
         }
 
 

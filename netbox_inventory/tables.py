@@ -527,6 +527,9 @@ class PurchaseTable(NetBoxTable):
         url_params={"purchase_id": "pk"},
         verbose_name="Assets",
     )
+    delivery_instructions = columns.MarkdownColumn(
+        verbose_name="Delivery Instructions"
+    )
     comments = columns.MarkdownColumn()
     tags = columns.TagColumn()
 
@@ -540,6 +543,7 @@ class PurchaseTable(NetBoxTable):
             'bomsstatus',
             'date',
             'description',
+            'delivery_instructions',
             'comments',
             'delivery_count',
             'asset_count',

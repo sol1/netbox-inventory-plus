@@ -92,6 +92,7 @@ class PurchaseSerializer(NetBoxModelSerializer):
             'status',
             'date',
             'description',
+            'delivery_instructions',
             'comments',
             'tags',
             'custom_fields',
@@ -110,6 +111,7 @@ class PurchaseSerializer(NetBoxModelSerializer):
             "status",
             "date",
             "description",
+            "delivery_instructions",
         )
 
 

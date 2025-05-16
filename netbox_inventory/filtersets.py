@@ -632,6 +632,7 @@ class PurchaseFilterSet(NetBoxModelFilterSet):
             | Q(description__icontains=value)
             | Q(supplier__name__icontains=value)
             | Q(boms__name__icontains=value)
+            | Q(delivery_instructions__icontains=value)
         )
         return queryset.filter(query)
 
