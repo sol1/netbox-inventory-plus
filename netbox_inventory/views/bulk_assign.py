@@ -172,6 +172,7 @@ class AssignToAssetView(BulkAssignView):
         'purchase',
         'purchase__supplier',
         'delivery',
+        'storage_site',
         'storage_location',
     )
     table = tables.AssetTable

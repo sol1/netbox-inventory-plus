@@ -48,6 +48,7 @@ class AssetViewSet(NetBoxModelViewSet):
         'module',
         'rack_type',
         'rack',
+        'storage_site',
         'storage_location',
         'delivery',
         'purchase__supplier',

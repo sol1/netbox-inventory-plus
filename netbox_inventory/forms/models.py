@@ -125,6 +125,7 @@ class AssetForm(NetBoxModelForm):
     )
     storage_site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
+        help_text=Asset._meta.get_field("storage_site").help_text,
         required=False,
         initial_params={
             "locations": "$storage_location",
@@ -178,6 +179,7 @@ class AssetForm(NetBoxModelForm):
             'module_type',
             'inventoryitem_type',
             'rack_type',
+            'storage_site',
             'storage_location',
             'owner',
             'bom',

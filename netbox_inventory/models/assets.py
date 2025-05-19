@@ -243,9 +243,17 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         blank=True,
         null=True,
     )
-
+    storage_site = models.ForeignKey(
+        help_text='Site where this asset is stored when not in use',
+        to='dcim.Site',
+        on_delete=models.PROTECT,
+        related_name='+',
+        blank=True,
+        null=True,
+        verbose_name='Storage Site',
+    )
     storage_location = models.ForeignKey(
-        help_text='Where is this asset stored when not in use',
+        help_text='Location where this asset is stored when not in use',
         to='dcim.Location',
         on_delete=models.PROTECT,
         related_name='+',
@@ -336,6 +344,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         'eol_date',
         'tenant',
         'contact',
+        'storage_site',
         'storage_location',
         'comments',
     ]
@@ -368,11 +377,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
     @property
     def hardware(self):
         return self.device or self.module or self.inventoryitem or self.rack or None
-
-    @property
-    def storage_site(self):
-        if self.storage_location:
-            return self.storage_location.site
 
     @property
     def installed_site(self):
@@ -499,12 +503,34 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         self.validate_hardware()
         self.update_status()
         self.update_location()
+        self.infer_storage_site()
         self.sync_hardware_eol()
         return super().clean()
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
         return super().save(*args, **kwargs)
+
+    def clean_delivery(self):
+        if self.delivery and not self.purchase:
+            self.purchase = self.delivery.purchases.first()
+        if self.delivery:
+            if self.purchase and self.purchase not in self.delivery.purchases.all():
+                raise ValidationError(
+                    {
+                        'purchase': 'The selected purchase is not associated with the delivery.'
+                    }
+                )
+
+    def clean_warranty_dates(self):
+        if (
+            self.warranty_start
+            and self.warranty_end
+            and self.warranty_end <= self.warranty_start
+        ):
+            raise ValidationError(
+                {'warranty_end': 'Warranty end date must be after warranty start date.'}
+            )
 
     def validate_hardware_types(self):
         """
@@ -603,6 +629,28 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         # Planned: Default status
         self.status = planned_status
 
+    def update_location(self):
+        """
+        Update the location of the asset based on the location of the assigned
+        delivery.
+        """
+        new_hw = getattr(self, self.kind)
+
+        if self.delivery and not new_hw:
+            self.storage_site = self.delivery.delivery_site
+            self.storage_location = self.delivery.delivery_location
+        else:
+            self.storage_site = None
+            self.storage_location = None
+
+    def infer_storage_site(self):
+        """
+        If only storage_location is set, infer storage_site from it
+        """
+        if self.storage_location and not self.storage_site:
+            self.storage_site = self.storage_location.site
+            return
+
     def update_hardware_used(self, clear_old_hw=True):
         """
         If assigning as device, module, inventoryitem or rack set serial and
@@ -632,29 +680,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             if new_hw:
                 asset_set_new_hw(asset=self, hw=new_hw)
 
-    def update_location(self):
-        """
-        Update the location of the asset based on the location of the assigned
-        delivery.
-        """
-        new_hw = getattr(self, self.kind)
-
-        if self.delivery and not new_hw:
-            self.storage_location = self.delivery.delivery_location
-        else:
-            self.storage_location = None
-
-    def clean_delivery(self):
-        if self.delivery and not self.purchase:
-            self.purchase = self.delivery.purchases.first()
-        if self.delivery:
-            if self.purchase and self.purchase not in self.delivery.purchases.all():
-                raise ValidationError(
-                    {
-                        'purchase': 'The selected purchase is not associated with the delivery.'
-                    }
-                )
-
     def sync_hardware_eol(self):
         """
         Sync asset's eol_date from corresponding hardware type if plugin setting is enabled.
@@ -678,16 +703,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if hw_type:
             eol_date = hw_type.cf.get('eol_date') if hasattr(hw_type, 'cf') else None
             self.eol_date = eol_date if eol_date else None
-
-    def clean_warranty_dates(self):
-        if (
-            self.warranty_start
-            and self.warranty_end
-            and self.warranty_end <= self.warranty_start
-        ):
-            raise ValidationError(
-                {'warranty_end': 'Warranty end date must be after warranty start date.'}
-            )
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_inventory:asset', args=[self.pk])

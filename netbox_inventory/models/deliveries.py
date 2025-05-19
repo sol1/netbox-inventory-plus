@@ -178,6 +178,15 @@ class Delivery(NetBoxModel):
         blank=True,
         null=True,
     )
+    delivery_site = models.ForeignKey(
+        help_text='The site where this delivery is to be received',
+        to='dcim.Site',
+        on_delete=models.PROTECT,
+        related_name='+',
+        blank=True,
+        null=True,
+        verbose_name='Delivery Site',
+    )
     delivery_location = models.ForeignKey(
         help_text='The location where this delivery is to be received',
         to='dcim.Location',
@@ -199,15 +208,23 @@ class Delivery(NetBoxModel):
         'purchases',
         'date',
         'receiving_contact',
+        'delivery_site',
         'delivery_location',
         'description',
         'comments'
     ]
 
-    @property
-    def delivery_site(self):
-        if self.delivery_location:
-            return self.delivery_location.site
+    def clean(self):
+        self.infer_delivery_site()
+        return super().clean()
+
+    def infer_delivery_site(self):
+        """
+        If only delivery_location is set, infer delivery_site from it
+        """
+        if self.delivery_location and not self.delivery_site:
+            self.delivery_site = self.delivery_location.site
+            return
 
     class Meta:
         ordering = ['name']

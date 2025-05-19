@@ -176,6 +176,9 @@ class AssetTable(NetBoxTable):
     contact = tables.Column(
         linkify=True,
     )
+    storage_site = tables.Column(
+        linkify=True,
+    )
     storage_location = tables.Column(
         linkify=True,
     )
