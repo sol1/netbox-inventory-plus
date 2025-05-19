@@ -33,6 +33,14 @@ class AssetReassignMixin(forms.Form):
         required=False,
         help_text='Limit New Asset choices only to assets stored at this site',
     )
+    storage_site = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        initial_params={
+            "locations": "$storage_location",
+        },
+        help_text='Limit New Asset choices only to assets stored at this site',
+    )
     storage_location = DynamicModelChoiceField(
         queryset=Location.objects.all(),
         required=False,

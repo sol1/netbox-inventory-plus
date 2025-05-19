@@ -367,7 +367,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
     )
     storage_site_id = django_filters.ModelMultipleChoiceFilter(
         queryset=Site.objects.all(),
-        field_name="storage_location__site",
+        field_name="storage_site",
         label="Storage site (ID)",
     )
     storage_location_id = django_filters.ModelMultipleChoiceFilter(
@@ -632,6 +632,7 @@ class PurchaseFilterSet(NetBoxModelFilterSet):
             | Q(description__icontains=value)
             | Q(supplier__name__icontains=value)
             | Q(boms__name__icontains=value)
+            | Q(delivery_instructions__icontains=value)
         )
         return queryset.filter(query)
 

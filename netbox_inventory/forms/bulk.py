@@ -176,6 +176,11 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
             "group_id": "$contact_group",
         },
     )
+    storage_site = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        help_text=Asset._meta.get_field("storage_site").help_text,
+        required=False,
+    )
     storage_location = DynamicModelChoiceField(
         queryset=Location.objects.all(),
         help_text=Asset._meta.get_field("storage_location").help_text,
@@ -209,7 +214,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
             name='Purchase',
         ),
         FieldSet("tenant", "contact_group", "contact", name="Assigned to"),
-        FieldSet("storage_location", name="Location"),
+        FieldSet("storage_site", "storage_location", name="Location"),
     )
     nullable_fields = (
         "name",
@@ -289,7 +294,7 @@ class AssetImportForm(NetBoxModelImportForm):
     storage_site = CSVModelChoiceField(
         queryset=Site.objects.all(),
         to_field_name="name",
-        help_text="Site that contains storage_location asset will be stored in.",
+        help_text="Site where is this asset stored when not in use. It must exist before import.",
         required=False,
     )
     storage_location = CSVModelChoiceField(

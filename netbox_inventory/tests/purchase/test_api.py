@@ -16,6 +16,7 @@ class PurchaseTest(
     brief_fields = [
         'boms',
         'date',
+        'delivery_instructions',
         'description',
         'display',
         'id',

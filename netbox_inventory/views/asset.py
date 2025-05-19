@@ -60,6 +60,7 @@ class AssetListView(generic.ObjectListView):
         "bom",
         "purchase__supplier",
         "delivery",
+        "storage_site",
         "storage_location",
     )
     table = tables.AssetTable
