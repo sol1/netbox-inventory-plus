@@ -607,7 +607,8 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         ordered_status = get_status_for('ordered')
         planned_status = get_status_for('planned')
 
-        # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment; do not change it
+        # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment;
+        # do not change it
         if not getattr(self, '_in_bulk_assignment', False) and old_status != self.status:
             return
 
@@ -631,17 +632,17 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
     def update_location(self):
         """
-        Update the location of the asset based on the location of the assigned
-        delivery.
+        Update the location of the Asset based on the location of the assigned Delivery. Only
+        update if the assigned Delivery changes.
         """
+        old_delivery = get_prechange_field(self, 'delivery')
+        new_delivery = self.delivery
         new_hw = getattr(self, self.kind)
 
-        if self.delivery and not new_hw:
-            self.storage_site = self.delivery.delivery_site
-            self.storage_location = self.delivery.delivery_location
-        else:
-            self.storage_site = None
-            self.storage_location = None
+        if old_delivery != new_delivery:
+            if new_delivery and not new_hw:
+                self.storage_site = new_delivery.delivery_site
+                self.storage_location = new_delivery.delivery_location
 
     def infer_storage_site(self):
         """

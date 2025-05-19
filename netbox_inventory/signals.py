@@ -16,7 +16,7 @@ from dcim.models import (
 from utilities.exceptions import AbortRequest
 
 from .models import Asset, Delivery, InventoryItemType, Transfer
-from .utils import get_plugin_setting, get_status_for, is_equal_none
+from .utils import get_plugin_setting, get_prechange_field, get_status_for, is_equal_none
 
 logger = logging.getLogger('netbox.netbox_inventory.signals')
 
@@ -162,19 +162,30 @@ def update_asset_eol_dates(sender, instance, **kwargs):
         asset.full_clean()
         asset.save()
 
-"""
-Matt said some conditionals for when assets should inherit from delivery_site and delivery_location
-so I'm noting this here so I don't forget :) (they'll probs have to go here)
 
-- when asset is saved if old delivery is different from new delivery update site/location else
-nothing
-- if delivery site/location is change update assets only if the current asset site/location the
-same as the old delivery site/location
+@receiver(post_save, sender=Delivery)
+def update_assets_delivery_site_location(instance, created, **kwargs):
+    """
+    Update the delivery site and location of all Assets when the delivery site or location of the
+    Delivery is changed. Only update Assets that are still matched to the old delivery site and
+    location.
+    - when asset is saved if old delivery is different from new delivery update site/location else
+    nothing
+    - if delivery site/location is change update assets only if the current asset site/location the
+    same as the old delivery site/location
+    """
+    if not created:
+        old_delivery_site = get_prechange_field(instance, 'delivery_site')
+        old_delivery_location = get_prechange_field(instance, 'delivery_location')
 
-The reasoning here is only once something has been delivered it may change location (moved to the
-build room from storage) and we shouldn't override that. And deliveries could put the wrong
-information for site/location in (human makes error) so fixing that by changing the delivery
-site/location should only update assest that still have the old (bad) info as assets of that
-delivery with a different location to the old location may have already been moved elsewhere and we
-shouldn't override that.
-"""
+        if (
+            instance.delivery_site != old_delivery_site
+            or instance.delivery_location != old_delivery_location
+        ):
+            Asset.objects.filter(
+                Q(storage_site_id=old_delivery_site)
+                & Q(storage_location_id=old_delivery_location)
+            ).update(
+                storage_site_id=instance.delivery_site,
+                storage_location_id=instance.delivery_location,
+            )
