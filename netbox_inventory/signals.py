@@ -16,7 +16,12 @@ from dcim.models import (
 from utilities.exceptions import AbortRequest
 
 from .models import Asset, Delivery, InventoryItemType, Transfer
-from .utils import get_plugin_setting, get_prechange_field, get_status_for, is_equal_none
+from .utils import (
+    get_plugin_setting,
+    get_prechange_field,
+    get_status_for,
+    is_equal_none,
+)
 
 logger = logging.getLogger('netbox.netbox_inventory.signals')
 
