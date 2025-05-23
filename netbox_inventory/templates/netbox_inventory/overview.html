@@ -153,6 +153,20 @@
         storage_location fields updated to the site and location of the Delivery.`,
         img: "{% static 'netbox_inventory/step7.jpg' %}"
       },
+      {
+        html: `<strong>What's Next?</strong><br>
+        Congratulations! You've successfully completed the basics of using NetBox Inventory Plus. From here, you can
+        further explore the features of the plugin, such as:
+        <ul>
+          <li>Bulk scanning serial numbers onto <a href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets</a></li>
+          <li>Assigning Assets to Devices, Modules, and Racks in your network</li>
+          <li>Creating <a href="{% url 'plugins:netbox_inventory:courier_list' %}">Couriers</a> to handle and track
+            <a href="{% url 'plugins:netbox_inventory:transfer_list' %}">Transfers</a> of Assets</li>
+        </ul>
+        <p>For more information, please refer to the README file on our
+          <a href="https://github.com/sol1/netbox-inventory-plus" target="_blank">GitHub repository</a>.`,
+        img: "{% static 'netbox_inventory/step8.jpg' %}"
+      },
     ];
 
     let currentStep = 0;
