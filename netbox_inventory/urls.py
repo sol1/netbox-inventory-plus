@@ -5,6 +5,8 @@ from utilities.urls import get_model_urls
 from . import views
 
 urlpatterns = (
+    # Overview
+    path('overview/', views.OverviewView.as_view(), name='overview'),
     # InventoryItemGroups
     path(
         'inventory-item-groups/',

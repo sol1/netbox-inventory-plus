@@ -1,7 +1,8 @@
 import django_tables2 as tables
-from dcim.tables import DeviceTypeTable, ModuleTypeTable, RackTypeTable
 from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
+
+from dcim.tables import DeviceTypeTable, ModuleTypeTable, RackTypeTable
 from netbox.tables import NetBoxTable, columns
 from tenancy.tables import ContactsColumnMixin
 from utilities.tables import register_table_column
@@ -173,6 +174,9 @@ class AssetTable(NetBoxTable):
         linkify=True,
     )
     contact = tables.Column(
+        linkify=True,
+    )
+    storage_site = tables.Column(
         linkify=True,
     )
     storage_location = tables.Column(
@@ -526,6 +530,9 @@ class PurchaseTable(NetBoxTable):
         url_params={"purchase_id": "pk"},
         verbose_name="Assets",
     )
+    delivery_instructions = columns.MarkdownColumn(
+        verbose_name="Delivery Instructions"
+    )
     comments = columns.MarkdownColumn()
     tags = columns.TagColumn()
 
@@ -539,6 +546,7 @@ class PurchaseTable(NetBoxTable):
             'bomsstatus',
             'date',
             'description',
+            'delivery_instructions',
             'comments',
             'delivery_count',
             'asset_count',

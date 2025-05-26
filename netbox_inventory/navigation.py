@@ -6,6 +6,19 @@ from netbox.plugins import (
 )
 
 #
+# Overview
+#
+
+overview_items = (
+    PluginMenuItem(
+        link='plugins:netbox_inventory:overview',
+        link_text='Overview',
+        permissions=['netbox_inventory.view_overview'],
+    ),
+)
+
+
+#
 # Assets
 #
 
@@ -227,6 +240,7 @@ if get_plugin_config('netbox_inventory', 'top_level_menu'):
     menu = PluginMenu(
         label='Inventory',
         groups=(
+            ('Overview', overview_items),
             ('Asset Management', assets_items),
             ('Deliveries', deliveries_items),
             ('Transit', transit_items),

@@ -3,6 +3,7 @@ from datetime import date
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+
 from netbox.models import NestedGroupModel, NetBoxModel
 from netbox.models.features import ImageAttachmentsMixin
 
@@ -242,9 +243,17 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         blank=True,
         null=True,
     )
-
+    storage_site = models.ForeignKey(
+        help_text='Site where this asset is stored when not in use',
+        to='dcim.Site',
+        on_delete=models.PROTECT,
+        related_name='+',
+        blank=True,
+        null=True,
+        verbose_name='Storage Site',
+    )
     storage_location = models.ForeignKey(
-        help_text='Where is this asset stored when not in use',
+        help_text='Location where this asset is stored when not in use',
         to='dcim.Location',
         on_delete=models.PROTECT,
         related_name='+',
@@ -335,6 +344,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         'eol_date',
         'tenant',
         'contact',
+        'storage_site',
         'storage_location',
         'comments',
     ]
@@ -367,11 +377,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
     @property
     def hardware(self):
         return self.device or self.module or self.inventoryitem or self.rack or None
-
-    @property
-    def storage_site(self):
-        if self.storage_location:
-            return self.storage_location.site
 
     @property
     def installed_site(self):
@@ -498,12 +503,34 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         self.validate_hardware()
         self.update_status()
         self.update_location()
+        self.infer_storage_site()
         self.sync_hardware_eol()
         return super().clean()
 
     def save(self, clear_old_hw=True, *args, **kwargs):
         self.update_hardware_used(clear_old_hw)
         return super().save(*args, **kwargs)
+
+    def clean_delivery(self):
+        if self.delivery and not self.purchase:
+            self.purchase = self.delivery.purchases.first()
+        if self.delivery:
+            if self.purchase and self.purchase not in self.delivery.purchases.all():
+                raise ValidationError(
+                    {
+                        'purchase': 'The selected purchase is not associated with the delivery.'
+                    }
+                )
+
+    def clean_warranty_dates(self):
+        if (
+            self.warranty_start
+            and self.warranty_end
+            and self.warranty_end <= self.warranty_start
+        ):
+            raise ValidationError(
+                {'warranty_end': 'Warranty end date must be after warranty start date.'}
+            )
 
     def validate_hardware_types(self):
         """
@@ -580,7 +607,8 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         ordered_status = get_status_for('ordered')
         planned_status = get_status_for('planned')
 
-        # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment; do not change it
+        # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment;
+        # do not change it
         if not getattr(self, '_in_bulk_assignment', False) and old_status != self.status:
             return
 
@@ -602,6 +630,28 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         # Planned: Default status
         self.status = planned_status
 
+    def update_location(self):
+        """
+        Update the location of the Asset based on the location of the assigned Delivery. Only
+        update if the assigned Delivery changes.
+        """
+        old_delivery = get_prechange_field(self, 'delivery')
+        new_delivery = self.delivery
+        new_hw = getattr(self, self.kind)
+
+        if old_delivery != new_delivery:
+            if new_delivery and not new_hw:
+                self.storage_site = new_delivery.delivery_site
+                self.storage_location = new_delivery.delivery_location
+
+    def infer_storage_site(self):
+        """
+        If only storage_location is set, infer storage_site from it
+        """
+        if self.storage_location and not self.storage_site:
+            self.storage_site = self.storage_location.site
+            return
+
     def update_hardware_used(self, clear_old_hw=True):
         """
         If assigning as device, module, inventoryitem or rack set serial and
@@ -611,7 +661,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             return None
         old_hw = get_prechange_field(self, self.kind)
         new_hw = getattr(self, self.kind)
-        print(f"old_hw: {old_hw} and new_hw: {new_hw}")
         if old_hw:
             old_hw.snapshot()
         if new_hw:
@@ -632,29 +681,6 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             if new_hw:
                 asset_set_new_hw(asset=self, hw=new_hw)
 
-    def update_location(self):
-        """
-        Update the location of the asset based on the location of the assigned
-        delivery.
-        """
-        new_hw = getattr(self, self.kind)
-
-        if self.delivery and not new_hw:
-            self.storage_location = self.delivery.delivery_location
-        else:
-            self.storage_location = None
-
-    def clean_delivery(self):
-        if self.delivery and not self.purchase:
-            self.purchase = self.delivery.purchases.first()
-        if self.delivery:
-            if self.purchase and self.purchase not in self.delivery.purchases.all():
-                raise ValidationError(
-                    {
-                        'purchase': 'The selected purchase is not associated with the delivery.'
-                    }
-                )
-
     def sync_hardware_eol(self):
         """
         Sync asset's eol_date from corresponding hardware type if plugin setting is enabled.
@@ -670,27 +696,14 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if new_eol_date and isinstance(new_eol_date, str):
             new_eol_date = date.fromisoformat(new_eol_date)
 
-        print(f"old_eol_date: {old_eol_date} and new_eol_date: {new_eol_date}")
         if old_eol_date != new_eol_date:
             # eol_date changed manually, do not sync
-            print("eol_date changed manually, do not sync")
             return
 
         hw_type = self.hardware_type
         if hw_type:
             eol_date = hw_type.cf.get('eol_date') if hasattr(hw_type, 'cf') else None
-            print(f"eol_date: {eol_date}")
             self.eol_date = eol_date if eol_date else None
-
-    def clean_warranty_dates(self):
-        if (
-            self.warranty_start
-            and self.warranty_end
-            and self.warranty_end <= self.warranty_start
-        ):
-            raise ValidationError(
-                {'warranty_end': 'Warranty end date must be after warranty start date.'}
-            )
 
     def get_absolute_url(self):
         return reverse('plugins:netbox_inventory:asset', args=[self.pk])

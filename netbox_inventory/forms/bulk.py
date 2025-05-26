@@ -1,7 +1,8 @@
-from dcim.models import DeviceType, Location, Manufacturer, ModuleType, RackType, Site
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.text import slugify
+
+from dcim.models import DeviceType, Location, Manufacturer, ModuleType, RackType, Site
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelImportForm
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities.forms import add_blank_choice
@@ -61,23 +62,6 @@ __all__ = (
     'TransferImportForm',
     'TransferBulkEditForm',
 )
-
-
-class AssetBulkAddForm(forms.Form):
-    """Form for creating multiple Assets by count"""
-
-    count = forms.IntegerField(
-        min_value=1,
-        required=True,
-        help_text="How many assets to create",
-    )
-
-
-class AssetBulkAddModelForm(AssetForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["asset_tag"].disabled = True
-        self.fields["serial"].disabled = True
 
 
 class AssetBulkAddForm(forms.Form):
@@ -169,6 +153,9 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     warranty_end = forms.DateField(
         label="Warranty end", required=False, widget=DatePicker()
     )
+    eol_date = forms.DateField(
+        label="EOL date", required=False, widget=DatePicker()
+    )
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         help_text=Asset._meta.get_field("tenant").help_text,
@@ -188,6 +175,11 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         query_params={
             "group_id": "$contact_group",
         },
+    )
+    storage_site = DynamicModelChoiceField(
+        queryset=Site.objects.all(),
+        help_text=Asset._meta.get_field("storage_site").help_text,
+        required=False,
     )
     storage_location = DynamicModelChoiceField(
         queryset=Location.objects.all(),
@@ -218,10 +210,11 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             name='Purchase',
         ),
         FieldSet("tenant", "contact_group", "contact", name="Assigned to"),
-        FieldSet("storage_location", name="Location"),
+        FieldSet("storage_site", "storage_location", name="Location"),
     )
     nullable_fields = (
         "name",
@@ -301,7 +294,7 @@ class AssetImportForm(NetBoxModelImportForm):
     storage_site = CSVModelChoiceField(
         queryset=Site.objects.all(),
         to_field_name="name",
-        help_text="Site that contains storage_location asset will be stored in.",
+        help_text="Site where is this asset stored when not in use. It must exist before import.",
         required=False,
     )
     storage_location = CSVModelChoiceField(
@@ -400,6 +393,7 @@ class AssetImportForm(NetBoxModelImportForm):
             "transfer",
             "warranty_start",
             "warranty_end",
+            "eol_date",
             "comments",
             "tenant",
             "contact",
@@ -953,154 +947,6 @@ class InventoryItemGroupBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = (
         "parent",
         "description",
-    )
-
-
-class CourierImportForm(NetBoxModelImportForm):
-    class Meta:
-        model = Courier
-        fields = ('name', 'slug', 'description', 'comments', 'tags')
-
-
-class CourierBulkEditForm(NetBoxModelBulkEditForm):
-    description = forms.CharField(
-        required=False,
-    )
-    comments = CommentField(
-        required=False,
-    )
-
-    model = Courier
-    fieldsets = (FieldSet('description', name='General'),)
-    nullable_fields = ('description',)
-
-
-class TransferImportForm(NetBoxModelImportForm):
-    courier = CSVModelChoiceField(
-        queryset=Courier.objects.all(),
-        to_field_name='name',
-        required=False,
-        help_text='Courier that is handling this transfer.',
-    )
-    status = CSVChoiceField(
-        choices=TransferStatusChoices,
-        help_text='Transfer lifecycle status.',
-    )
-    sender = CSVModelChoiceField(
-        queryset=Contact.objects.all(),
-        to_field_name='name',
-        required=True,
-        help_text='Contact that is sending this transfer. It must exist before import.',
-    )
-    recipient = CSVModelChoiceField(
-        queryset=Contact.objects.all(),
-        to_field_name='name',
-        required=True,
-        help_text='Contact that is receiving this transfer. It must exist before import.',
-    )
-    site = CSVModelChoiceField(
-        queryset=Site.objects.all(),
-        to_field_name='name',
-        help_text='Site where this transfer is to be delivered. It must exist before import.',
-        required=True,
-    )
-    location = CSVModelChoiceField(
-        queryset=Location.objects.all(),
-        to_field_name='name',
-        help_text='On-site location where this transfer is to be delivered. It must exist before import.',
-        required=False,
-    )
-    pickup_date = forms.DateField(
-        help_text='Date the courier picked up the transfer from sender.',
-        required=False,
-    )
-    received_date = forms.DateField(
-        help_text='Date the courier delivered the transfer to recipient.',
-        required=False,
-    )
-
-    class Meta:
-        model = Transfer
-        fields = (
-            'name',
-            'courier',
-            'shipping_number',
-            'instructions',
-            'status',
-            'sender',
-            'recipient',
-            'site',
-            'location',
-            'pickup_date',
-            'received_date',
-            'comments',
-            'tags',
-        )
-
-
-class TransferBulkEditForm(NetBoxModelBulkEditForm):
-    name = forms.CharField(
-        required=False,
-    )
-    courier = DynamicModelChoiceField(
-        queryset=Courier.objects.all(),
-        help_text=Transfer._meta.get_field('courier').help_text,
-        required=False,
-    )
-    status = forms.ChoiceField(
-        choices=add_blank_choice(TransferStatusChoices),
-        required=False,
-        initial='',
-    )
-    sender = DynamicModelChoiceField(
-        queryset=Contact.objects.all(),
-        help_text=Transfer._meta.get_field('sender').help_text,
-        required=False,
-    )
-    recipient = DynamicModelChoiceField(
-        queryset=Contact.objects.all(),
-        help_text=Transfer._meta.get_field('recipient').help_text,
-        required=False,
-    )
-    site = DynamicModelChoiceField(
-        queryset=Site.objects.all(),
-        help_text=Transfer._meta.get_field('site').help_text,
-        required=False,
-    )
-    location = DynamicModelChoiceField(
-        queryset=Location.objects.all(),
-        help_text=Transfer._meta.get_field('location').help_text,
-        required=False,
-    )
-    pickup_date = forms.DateField(
-        label='Pickup Date', required=False, widget=DatePicker()
-    )
-    received_date = forms.DateField(
-        label='Pickup Date', required=False, widget=DatePicker()
-    )
-    comments = CommentField(
-        required=False,
-    )
-
-    model = Transfer
-    fieldsets = (
-        FieldSet('name', 'courier', 'status', name='General'),
-        FieldSet(
-            'sender',
-            'recipient',
-            'site',
-            'location',
-            'pickup_date',
-            'received_date',
-            name='Transfer',
-        ),
-    )
-    nullable_fields = (
-        'name',
-        'courier',
-        'recipient',
-        'pickup_date',
-        'received_date',
     )
 
 

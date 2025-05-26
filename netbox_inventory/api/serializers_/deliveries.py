@@ -1,6 +1,7 @@
+from rest_framework import serializers
+
 from dcim.api.serializers import LocationSerializer
 from netbox.api.serializers import NetBoxModelSerializer
-from rest_framework import serializers
 from tenancy.api.serializers import ContactSerializer
 
 from netbox_inventory.models import BOM, Delivery, Purchase, Supplier
@@ -91,6 +92,7 @@ class PurchaseSerializer(NetBoxModelSerializer):
             'status',
             'date',
             'description',
+            'delivery_instructions',
             'comments',
             'tags',
             'custom_fields',
@@ -109,6 +111,7 @@ class PurchaseSerializer(NetBoxModelSerializer):
             "status",
             "date",
             "description",
+            "delivery_instructions",
         )
 
 

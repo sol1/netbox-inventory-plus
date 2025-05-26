@@ -16,7 +16,12 @@ from dcim.models import (
 from utilities.exceptions import AbortRequest
 
 from .models import Asset, Delivery, InventoryItemType, Transfer
-from .utils import get_plugin_setting, get_status_for, is_equal_none
+from .utils import (
+    get_plugin_setting,
+    get_prechange_field,
+    get_status_for,
+    is_equal_none,
+)
 
 logger = logging.getLogger('netbox.netbox_inventory.signals')
 
@@ -96,15 +101,19 @@ def close_bom_if_all_assets_delivered(instance, **kwargs):
     """
     Close BOM if all Assets are delivered.
     """
-    if instance.bom:
-        all_assets_delivered = not instance.bom.assets.filter(
+
+    bom = instance.bom
+    # check if bom is set and not already closed
+    if bom and bom.status != 'closed':
+        all_assets_delivered = not bom.assets.filter(
             Q(delivery__isnull=True)
         ).exists()
         if all_assets_delivered:
-            instance.bom.status = 'closed'
-            instance.bom.save()
+            bom.status = 'closed'
+            bom.full_clean()
+            bom.save()
             logger.info(
-                f"BOM {instance.bom} marked as 'Closed' because all associated assets are delivered."
+                f"BOM {bom} marked as 'Closed' because all associated assets are delivered."
             )
 
 
@@ -142,17 +151,46 @@ def update_asset_eol_dates(sender, instance, **kwargs):
 
     eol_date = instance.cf.get('eol_date', None)
     if sender == DeviceType:
-        related_hw_field = 'device__device_type'
+        hw_field = 'device_type'
     elif sender == ModuleType:
-        related_hw_field = 'module__module_type'
+        hw_field = 'module_type'
     # elif sender == InventoryItemType:
-    #     related_hw_field = 'inventoryitem__inventoryitem_type'
+    #     hw_field = 'inventoryitem_type'
     elif sender == RackType:
-        related_hw_field = 'rack__rack_type'
+        hw_field = 'rack_type'
     else:
         return
 
-    assets_to_update = Asset.objects.filter(**{related_hw_field: instance})
+    assets_to_update = Asset.objects.filter(**{hw_field: instance})
     for asset in assets_to_update:
         asset.eol_date = eol_date
+        asset.full_clean()
         asset.save()
+
+
+@receiver(post_save, sender=Delivery)
+def update_assets_delivery_site_location(instance, created, **kwargs):
+    """
+    Update the delivery site and location of all Assets when the delivery site or location of the
+    Delivery is changed. Only update Assets that are still matched to the old delivery site and
+    location.
+    - when asset is saved if old delivery is different from new delivery update site/location else
+    nothing
+    - if delivery site/location is change update assets only if the current asset site/location the
+    same as the old delivery site/location
+    """
+    if not created:
+        old_delivery_site = get_prechange_field(instance, 'delivery_site')
+        old_delivery_location = get_prechange_field(instance, 'delivery_location')
+
+        if (
+            instance.delivery_site != old_delivery_site
+            or instance.delivery_location != old_delivery_location
+        ):
+            Asset.objects.filter(
+                Q(storage_site_id=old_delivery_site)
+                & Q(storage_location_id=old_delivery_location)
+            ).update(
+                storage_site_id=instance.delivery_site,
+                storage_location_id=instance.delivery_location,
+            )

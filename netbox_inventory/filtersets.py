@@ -1,6 +1,8 @@
 from functools import reduce
 
 import django_filters
+from django.db.models import Q
+
 from dcim.filtersets import DeviceFilterSet, InventoryItemFilterSet, ModuleFilterSet
 from dcim.models import (
     Device,
@@ -17,7 +19,6 @@ from dcim.models import (
     RackType,
     Site,
 )
-from django.db.models import Q
 from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
 from tenancy.models import Contact, ContactGroup, Tenant
@@ -366,7 +367,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
     )
     storage_site_id = django_filters.ModelMultipleChoiceFilter(
         queryset=Site.objects.all(),
-        field_name="storage_location__site",
+        field_name="storage_site",
         label="Storage site (ID)",
     )
     storage_location_id = django_filters.ModelMultipleChoiceFilter(
@@ -631,6 +632,7 @@ class PurchaseFilterSet(NetBoxModelFilterSet):
             | Q(description__icontains=value)
             | Q(supplier__name__icontains=value)
             | Q(boms__name__icontains=value)
+            | Q(delivery_instructions__icontains=value)
         )
         return queryset.filter(query)
 

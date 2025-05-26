@@ -3,7 +3,7 @@ from netbox.forms import NetBoxModelForm
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities.forms.fields import CommentField, DynamicModelChoiceField, SlugField
 from utilities.forms.rendering import FieldSet
-from utilities.forms.widgets import DatePicker
+from utilities.forms.widgets import DatePicker, MarkdownWidget
 
 from netbox_inventory.choices import HardwareKindChoices
 
@@ -125,6 +125,7 @@ class AssetForm(NetBoxModelForm):
     )
     storage_site = DynamicModelChoiceField(
         queryset=Site.objects.all(),
+        help_text=Asset._meta.get_field("storage_site").help_text,
         required=False,
         initial_params={
             "locations": "$storage_location",
@@ -178,6 +179,7 @@ class AssetForm(NetBoxModelForm):
             'module_type',
             'inventoryitem_type',
             'rack_type',
+            'storage_site',
             'storage_location',
             'owner',
             'bom',
@@ -302,6 +304,7 @@ class PurchaseForm(NetBoxModelForm):
             'date',
             'description',
             'tags',
+            'delivery_instructions',
             name='Purchase',
         ),
     )
@@ -315,11 +318,13 @@ class PurchaseForm(NetBoxModelForm):
             "status",
             "date",
             "description",
+            "delivery_instructions",
             "comments",
             "tags",
         )
         widgets = {
             "date": DatePicker(),
+            "delivery_instructions": MarkdownWidget(),
         }
 
 
@@ -334,7 +339,7 @@ class DeliveryForm(NetBoxModelForm):
     delivery_location = DynamicModelChoiceField(
         queryset=Location.objects.all(),
         help_text=Delivery._meta.get_field('delivery_location').help_text,
-        required=True,
+        required=False,
         query_params={
             'site_id': '$delivery_site',
         },

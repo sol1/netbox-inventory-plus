@@ -10,6 +10,7 @@ from dcim.api.serializers import (
     ModuleTypeSerializer,
     RackSerializer,
     RackTypeSerializer,
+    SiteSerializer,
 )
 from netbox.api.serializers import NestedGroupModelSerializer, NetBoxModelSerializer
 from tenancy.api.serializers import ContactSerializer, TenantSerializer
@@ -142,6 +143,12 @@ class AssetSerializer(NetBoxModelSerializer):
         allow_null=True,
         default=None,
     )
+    storage_site = SiteSerializer(
+        nested=True,
+        required=False,
+        allow_null=True,
+        default=None,
+    )
     storage_location = LocationSerializer(
         nested=True,
         required=False,
@@ -224,6 +231,7 @@ class AssetSerializer(NetBoxModelSerializer):
             'rack',
             'tenant',
             'contact',
+            'storage_site',
             'storage_location',
             'owner',
             'bom',
@@ -232,6 +240,7 @@ class AssetSerializer(NetBoxModelSerializer):
             'transfer',
             'warranty_start',
             'warranty_end',
+            'eol_date',
             'comments',
             'tags',
             'custom_fields',

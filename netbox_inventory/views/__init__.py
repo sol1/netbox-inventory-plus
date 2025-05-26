@@ -9,6 +9,7 @@ from .create_and_assign import *
 from .delivery import *
 from .inventoryitem_group import *
 from .inventoryitem_type import *
+from .overview import *
 from .purchase import *
 from .supplier import *
 from .transfer import *
