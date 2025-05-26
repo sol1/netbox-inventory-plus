@@ -179,7 +179,7 @@ def query_located(queryset, field_name, values, assets_shown='all'):
             status__in=get_all_statuses_for('stored')
         )
     elif field_name == 'site':
-        q_stored = Q(**{'storage_location__site__in': values}) & Q(
+        q_stored = Q(**{'storage_site__in': values}) & Q(
             status__in=get_all_statuses_for('stored')
         )
 

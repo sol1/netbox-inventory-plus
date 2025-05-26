@@ -6,7 +6,7 @@ from django.urls import reverse
 from netbox.views import generic
 from utilities.query import count_related
 
-from .. import filtersets, models, tables
+from .. import filtersets, forms, models, tables
 
 __all__ = (
     'BulkAssignView',
@@ -32,6 +32,8 @@ class BulkAssignView(generic.ObjectListView):
 
     queryset = None
     table = None
+    filterset = None
+    filterset_form = None
     template_name = 'netbox_inventory/bulk_assign.html'
     related_mapping = {}
     """
@@ -170,16 +172,28 @@ class AssignToAssetView(BulkAssignView):
         'purchase',
         'purchase__supplier',
         'delivery',
+        'storage_site',
         'storage_location',
     )
     table = tables.AssetTable
     filterset = filtersets.AssetFilterSet
+    filterset_form = forms.AssetFilterForm
     related_mapping = {
         'bom': (models.BOM, 'bom'),
         'delivery': (models.Delivery, 'delivery'),
         'purchase': (models.Purchase, 'purchase'),
         'transfer': (models.Transfer, 'transfer'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_type = request.GET.get('related_type')
+        if related_type and related_type in self.related_mapping:
+            _, related_field = self.related_mapping[related_type]
+            # Exclude objects that are already assigned to the related object
+            filter_kwargs = {f"{related_field}__isnull": True}
+            queryset = queryset.filter(**filter_kwargs)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
@@ -193,9 +207,20 @@ class AssignToDeliveryView(BulkAssignView):
     )
     table = tables.DeliveryTable
     filterset = filtersets.DeliveryFilterSet
+    filterset_form = forms.DeliveryFilterForm
     related_mapping = {
         'purchase': (models.Purchase, 'purchases'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_type = request.GET.get('related_type')
+        if related_type and related_type in self.related_mapping:
+            _, related_field = self.related_mapping[related_type]
+            # Exclude objects that are already assigned to the related object
+            filter_kwargs = {f"{related_field}__isnull": True}
+            queryset = queryset.filter(**filter_kwargs)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
@@ -210,6 +235,7 @@ class AssignToPurchaseView(BulkAssignView):
     )
     table = tables.PurchaseTable
     filterset = filtersets.PurchaseFilterSet
+    filterset_form = forms.PurchaseFilterForm
     related_mapping = {
         'bom': (models.BOM, 'boms'),
     }
@@ -232,9 +258,18 @@ class AssignBOMsToPurchaseView(BulkAssignRelatedView):
     )
     table = tables.BOMTable
     filterset = filtersets.BOMFilterSet
+    filterset_form = forms.BOMFilterForm
     related_mapping = {
         'purchase': (models.Purchase, 'boms'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_id = request.GET.get('related_id')
+        if related_id:
+            # Exclude BOMs already assigned to this purchase
+            queryset = queryset.exclude(purchases__id=related_id)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
@@ -249,9 +284,18 @@ class AssignPurchasesToDeliveryView(BulkAssignRelatedView):
     )
     table = tables.PurchaseTable
     filterset = filtersets.PurchaseFilterSet
+    filterset_form = forms.PurchaseFilterForm
     related_mapping = {
         'delivery': (models.Delivery, 'purchases'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_id = request.GET.get('related_id')
+        if related_id:
+            # Exclude Purchases already assigned to this delivery
+            queryset = queryset.exclude(orders__id=related_id)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
