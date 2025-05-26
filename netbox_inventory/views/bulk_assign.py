@@ -185,6 +185,16 @@ class AssignToAssetView(BulkAssignView):
         'transfer': (models.Transfer, 'transfer'),
     }
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_type = request.GET.get('related_type')
+        if related_type and related_type in self.related_mapping:
+            _, related_field = self.related_mapping[related_type]
+            # Exclude objects that are already assigned to the related object
+            filter_kwargs = {f"{related_field}__isnull": True}
+            queryset = queryset.filter(**filter_kwargs)
+        return queryset
+
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
         context['object_type_plural'] = 'assets'
@@ -201,6 +211,16 @@ class AssignToDeliveryView(BulkAssignView):
     related_mapping = {
         'purchase': (models.Purchase, 'purchases'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_type = request.GET.get('related_type')
+        if related_type and related_type in self.related_mapping:
+            _, related_field = self.related_mapping[related_type]
+            # Exclude objects that are already assigned to the related object
+            filter_kwargs = {f"{related_field}__isnull": True}
+            queryset = queryset.filter(**filter_kwargs)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
@@ -243,6 +263,14 @@ class AssignBOMsToPurchaseView(BulkAssignRelatedView):
         'purchase': (models.Purchase, 'boms'),
     }
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_id = request.GET.get('related_id')
+        if related_id:
+            # Exclude BOMs already assigned to this purchase
+            queryset = queryset.exclude(purchases__id=related_id)
+        return queryset
+
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
         context['object_type_plural'] = 'BOMs'
@@ -260,6 +288,14 @@ class AssignPurchasesToDeliveryView(BulkAssignRelatedView):
     related_mapping = {
         'delivery': (models.Delivery, 'purchases'),
     }
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        related_id = request.GET.get('related_id')
+        if related_id:
+            # Exclude Purchases already assigned to this delivery
+            queryset = queryset.exclude(orders__id=related_id)
+        return queryset
 
     def get_extra_context(self, request):
         context = super().get_extra_context(request)
