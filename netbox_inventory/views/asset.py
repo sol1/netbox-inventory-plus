@@ -9,10 +9,11 @@ from django.utils.translation import gettext as _
 from mptt.models import MPTTModel
 
 from core.signals import clear_events
+from dcim.models import Device, Module, InventoryItem, Rack
 from netbox.views import generic
 from utilities.exceptions import AbortRequest, PermissionsViolation
 from utilities.forms import ConfirmationForm, restrict_form_fields
-from utilities.views import register_model_view
+from utilities.views import register_model_view, ViewTab
 
 from .. import filtersets, forms, models, tables
 from ..template_content import EOL_PROGRESSBAR, WARRANTY_PROGRESSBAR
@@ -464,3 +465,25 @@ class AssetBulkDeleteView(generic.BulkDeleteView):
             return redirect(self.get_return_url(request))
 
         return super().post(request, *args, **kwargs)
+
+
+class ObjectAssetView(generic.ObjectChildrenView):
+    child_model = models.Asset
+    table = tables.AssetTable
+    filterset = filtersets.AssetFilterSet
+    filterset_form = forms.AssetFilterForm
+    template_name = "netbox_inventory/object_asset.html"
+
+    tab = ViewTab(
+        label=_("Asset"),
+        permission="netbox_inventory.view_asset",
+        weight=5000,
+    )
+    
+    def get_children(self, request, parent):
+        return parent.device_type.assets.restrict(request.user, "view").order_by("name")
+
+
+@register_model_view(Device, ObjectAssetView, path="asset")
+class DeviceAssetView(ObjectAssetView):
+    queryset = Device.objects.all()
