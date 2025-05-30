@@ -481,9 +481,32 @@ class ObjectAssetView(generic.ObjectChildrenView):
     )
     
     def get_children(self, request, parent):
-        return parent.device_type.assets.restrict(request.user, "view").order_by("name")
+        return models.Asset.objects.none()
+    
+    def get_extra_context(self, request, instance):
+        context = super().get_extra_context(request, instance)
+        assets = self.get_children(request, instance)
+        context['asset'] = assets.first() if assets.exists() else None
+        return context
 
 
 @register_model_view(Device, ObjectAssetView, path="asset")
 class DeviceAssetView(ObjectAssetView):
     queryset = Device.objects.all()
+
+    def get_children(self, request, parent):
+        return parent.device_type.assets.restrict(request.user, "view").order_by("name")
+
+@register_model_view(Module, ObjectAssetView, path="asset")
+class ModuleAssetView(ObjectAssetView):
+    queryset = Module.objects.all()
+
+    def get_children(self, request, parent):
+        return parent.module_type.assets.restrict(request.user, "view").order_by("name")
+
+@register_model_view(Rack, ObjectAssetView, path="asset")
+class RackAssetView(ObjectAssetView):
+    queryset = Rack.objects.all()
+
+    def get_children(self, request, parent):
+        return parent.rack_type.assets.restrict(request.user, "view").order_by("name")

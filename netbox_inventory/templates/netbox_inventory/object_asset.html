@@ -1,3 +1,46 @@
 {% extends 'generic/object_children.html' %}
 {% load helpers %}
 {% load i18n %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col col-md-6">
+      <div class="card">
+        <h5 class="card-header">
+          Asset
+          {% if not asset %}
+            {% if perms.netbox_inventory.add_asset %}
+              <div class="card-actions">
+                <a href="{% url 'plugins:netbox_inventory:asset_list' %}" class="btn btn-ghost-primary btn-sm">
+                  <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Assign Asset
+                </a>
+              </div>
+            {% endif %}
+          {% endif %}
+        </h5>
+        {% if asset %}
+          <table class="table table-hover attr-table">
+            <tr>
+              <th scope="row"><span title="Asset name">Name</span></th>
+              <td><a href="{% url 'plugins:netbox_inventory:asset' asset.pk %}">{{ asset.hardware_type.manufacturer }} {{ asset }}{% if asset.name %} ({{ asset.name }}){% endif %}</a></td>
+            </tr>
+            <tr>
+              <th scope="row"><span title="Asset status">Status</span></a></th>
+              <td>{% badge asset.get_status_display bg_color=asset.get_status_color %}</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Owner</th>
+              <td>{{ asset.owner|linkify|placeholder }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Purchase</th>
+              <td>{{ asset.purchase|linkify|placeholder }}</td>
+            </tr>
+          </table>
+        {% else %}
+          <div class="card-body"><span class="text-muted">None assigned</span></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock content %}
