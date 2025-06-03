@@ -9,11 +9,11 @@ from django.utils.translation import gettext as _
 from mptt.models import MPTTModel
 
 from core.signals import clear_events
-from dcim.models import Device, Module, InventoryItem, Rack
+from dcim.models import Device, InventoryItem, Module, Rack
 from netbox.views import generic
 from utilities.exceptions import AbortRequest, PermissionsViolation
 from utilities.forms import ConfirmationForm, restrict_form_fields
-from utilities.views import register_model_view, ViewTab
+from utilities.views import ViewTab, register_model_view
 
 from .. import filtersets, forms, models, tables
 from ..template_content import EOL_PROGRESSBAR, WARRANTY_PROGRESSBAR
