@@ -83,6 +83,26 @@ urlpatterns = (
         views.AssetRackReassignView.as_view(),
         name='asset_rack_reassign',
     ),
+    path(
+        'assets/device/<int:pk>/create/',
+        views.DeviceAssetCreateView.as_view(),
+        name='device_asset_create',
+    ),
+    path(
+        'assets/module/<int:pk>/create/',
+        views.ModuleAssetCreateView.as_view(),
+        name='module_asset_create',
+    ),
+    path(
+        'assets/inventoryitem/<int:pk>/create/',
+        views.InventoryItemAssetCreateView.as_view(),
+        name='inventoryitem_asset_create',
+    ),
+    path(
+        'assets/rack/<int:pk>/create/',
+        views.RackAssetCreateView.as_view(),
+        name='rack_asset_create',
+    ),
     # Suppliers
     path(
         'suppliers/',

@@ -1,6 +1,7 @@
 from dcim.models import Device, InventoryItem, Module, Rack
 from netbox.views import generic
 
+from ..forms import AssetForm
 from ..forms.create import *
 from ..models import Asset
 
@@ -9,6 +10,10 @@ __all__ = (
     'AssetModuleCreateView',
     'AssetInventoryItemCreateView',
     'AssetRackCreateView',
+    'DeviceAssetCreateView',
+    'ModuleAssetCreateView',
+    'InventoryItemAssetCreateView',
+    'RackAssetCreateView',
 )
 
 
@@ -19,7 +24,10 @@ class AssetCreateView(generic.ObjectEditView):
     def _load_asset(self, request):
         asset_id = request.GET.get('asset_id')
         if asset_id:
-            self.asset = Asset.objects.get(pk=asset_id)
+            try:
+                self.asset = Asset.objects.get(pk=asset_id)
+            except Asset.DoesNotExist:
+                self.asset = None
 
     def dispatch(self, request, *args, **kwargs):
         self._load_asset(request)
@@ -70,3 +78,43 @@ class AssetRackCreateView(AssetCreateView):
 
     def get_object(self, **kwargs):
         return Rack(assigned_asset=self.asset)
+
+
+class DeviceAssetCreateView(AssetCreateView):
+    queryset = Device.objects.all()
+    form = AssetForm
+    template_name = 'netbox_inventory/asset_edit.html'
+
+    def get_object(self, **kwargs):
+        device = self.queryset.get(pk=kwargs.get('pk'))
+        return Asset(device_type=device.device_type)
+
+
+class ModuleAssetCreateView(AssetCreateView):
+    queryset = Module.objects.all()
+    form = AssetForm
+    template_name = 'netbox_inventory/asset_edit.html'
+
+    def get_object(self, **kwargs):
+        module = self.queryset.get(pk=kwargs.get('pk'))
+        return Asset(module_type=module.module_type)
+
+
+class InventoryItemAssetCreateView(AssetCreateView):
+    queryset = InventoryItem.objects.all()
+    form = AssetForm
+    template_name = 'netbox_inventory/asset_edit.html'
+
+    def get_object(self, **kwargs):
+        inventoryitem = self.queryset.get(pk=kwargs.get('pk'))
+        return Asset(inventoryitem_type=inventoryitem.inventoryitem_type)
+
+
+class RackAssetCreateView(AssetCreateView):
+    queryset = Rack.objects.all()
+    form = AssetForm
+    template_name = 'netbox_inventory/asset_edit.html'
+
+    def get_object(self, **kwargs):
+        rack = self.queryset.get(pk=kwargs.get('pk'))
+        return Asset(rack_type=rack.rack_type)

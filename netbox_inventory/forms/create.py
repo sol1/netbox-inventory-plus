@@ -7,6 +7,7 @@ from dcim.forms import DeviceForm, InventoryItemForm, ModuleForm, RackForm
 from dcim.models import Device, Rack
 from utilities.forms.fields import DynamicModelChoiceField
 
+# from . import AssetForm
 from ..utils import get_plugin_setting
 
 __all__ = (
@@ -14,6 +15,7 @@ __all__ = (
     'AssetModuleCreateForm',
     'AssetInventoryItemCreateForm',
     'AssetRackCreateForm',
+    # 'ObjectAssetCreateForm',
 )
 
 
@@ -168,3 +170,13 @@ class AssetRackCreateForm(AssetCreateMixin, RackForm):
     def clean_device_type(self):
         # no mattter what was POSTed, rack_type cannot be changed/missing...
         return self.instance.assigned_asset.rack_type
+
+
+# class ObjectAssetCreateForm(AssetForm):
+#     """
+#     Populates and disables editing of asset fields
+#     """
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.fields['manufacturer'].disabled = True
