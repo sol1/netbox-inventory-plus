@@ -111,12 +111,6 @@
     text-shadow: 0 2px 8px #000;
   }
 
-  .alert-info .mdi-information-outline {
-    margin-right: 0.25rem;
-    margin-right: -0.75rem;
-    /* move it back into existing space the .alert-info has  */
-  }
-
 </style>
 <div class="walkthrough-container">
   <div class="walkthrough-steps">
@@ -136,12 +130,12 @@
             <li>Add Supplier</li>
             <li>Add Bill of Materials (BOM)</li>
             <li><strong>Create Assets</strong> from new BOM <span class="alert alert-info bg-info-subtle"
-                style="display:inline;"><i class="mdi mdi-information-outline"></i>So the Assets are associated with the
+                style="display:inline;"><i class="mdi mdi-information-outline" style="margin-right:0.25rem; margin-left:-0.75rem;"></i>So the Assets are associated with the
                 BOM</span></li>
             <li>Add Purchase</li>
             <li><strong>Assign Existing Assets</strong> with Purchase</li>
             <li>Add Delivery</li>
-            <li><strong>Assign Existing Assets</strong> with Deliver</li>
+            <li><strong>Assign Existing Assets</strong> with Delivery</li>
             <li>Scan Serial Numbers in Bulk</li>
             <li>Deploying Assets to Devices and Modules</li>
           </ul>
@@ -154,11 +148,11 @@
             <li><strong>Assign Existing Assets</strong> with Transfer</li>
             <li>Update Transfer on courier pickup</li>
             <li>Add Delivery</li>
-            <li><strong>Assign Existing Assets</strong> with Deliver</li>
+            <li><strong>Assign Existing Assets</strong> with Delivery</li>
           </ul>
           <div class="alert alert-info bg-info-subtle"><i class="mdi mdi-information-outline"></i>Both the workflows
             above update the status of the BOM's, Purchases, Deliveries, Transfers
-            and Assets automatically at stages are complete.</div>
+            and Assets automatically when stages are complete.</div>
         </p>
       </div>
       <div class="walkthrough-image">
@@ -178,9 +172,8 @@
           </ul>
         </p>
         <p>
-          In addition to the different ways to start the Asset creation process the <a
-            href="{% url 'plugins:netbox_inventory:asset_add' %}">Create Asset</a> page has the option to create
-          indvidual Assets or Assets in bulk using a supplied quantity.
+          In addition, the <a href="{% url 'plugins:netbox_inventory:asset_add' %}">Create Asset</a> page 
+          has the option to create indvidual Assets or Assets in bulk using a supplied quantity.
         </p>
         <p>
           Creating or linking Assets to existing Devices or Modules occurs after the Asset has been saved.
@@ -195,11 +188,11 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <p>
           <strong>Create a Supplier</strong><br>
-          Suppliers are a prerequisite of BOM's. To Create a new <a
-            href="{% url 'plugins:netbox_inventory:supplier_add' %}">Supplier</a> to be associate with a BOM. Not to be
-          confused with
-          Manufacturers, Suppliers are the <strong>vendors</strong> of the physical products your assets are purchased
-          from.</p>
+          Suppliers are a prerequisite of BOM's. Create a new <a 
+          href="{% url 'plugins:netbox_inventory:supplier_add' %}">Supplier</a> to be associated with a BOM. Not to be
+          confused with Manufacturers, Suppliers are the <strong>vendors</strong> of the physical products your assets
+          are purchased from.
+        </p>
         <p>
           For example, if you have a Cisco switch and are purchasing it from ACME Networking Equipment, the supplier
           name would be 'ACME Networking Equipment'.
@@ -214,18 +207,18 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <p>
           <strong>Create a BOM</strong><br>
-          A BOM is created so you can associate a set of asset you require but haven't yet purchased.
+          A BOM is created so you can associate a set of Assets you require but haven't yet purchased.
         </p>
         <p>
           BOM's can be created on their own using the <a href="{% url 'plugins:netbox_inventory:bom_add' %}">Add</a>
           buttons.</br>
-          Or from a Purchase using the <strong>Create New Purchase</strong> button when viewing the Purchase which will
+          Or from a Purchase using the <strong>Create New BOM</strong> button when viewing the Purchase which will
           automatically associate this BOM with that object if you've done things out of order.
         </p>
         <p>
-          Once a BOM has been created you can create new Assets and associate them with the BOM while viewing the BOM
-          using the <strong>Create New Asset</strong> button.<br>
-          If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select
+          Once a BOM has been created you can create new Assets and associate them with the BOM using the
+          <strong>Create New Asset</strong> button.<br>
+          If the Assets already exist, use the <stong>Assign Existing Assets</stong> button and the bulk select
           interface.
         </p>
       </div>
@@ -238,20 +231,20 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <p>
           <strong>Create a Purchase</strong><br>
-          Purchase are used to track what you are ordering. They can be associated with multiple BOM's indepenant of a
-          Assets own association with a BOM.
+          Purchases are used to track what you are ordering. They can be associated with multiple BOMs independent of an
+          Asset's own association with a BOM.
         </p>
         <p>
           Purchases can be created on their own using the <strong>Add</strong> buttons.</br>
-          Or from a BOM or Purchase using the <strong>Create New Purchase</strong> button when viewing the BOM or
-          Purchase which will automatically associate this Purchase with that object.
+          Or from a BOM or Delivery using the <strong>Create New Purchase</strong> button when viewing the BOM or
+          Delivery which will automatically associate this Purchase with that object.
         </p>
         <p>
-          Once a Purchase has been created you can create new Assets and associate them with the Purchase while viewing
-          the Purchase using the <strong>Create New Asset</strong> button.<br>
-          If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select
-          interface, if you added a BOM(s) to your Purchase then the bulk select interface will be filtered to Asset
-          associated with that BOM(s).
+          Once a Purchase has been created you can create new Assets and associate them with the Purchase using the
+          <strong>Create New Asset</strong> button.<br>
+          If the Assets already exist, use the <stong>Assign Existing Assets</stong> button and the bulk select
+          interface. If you added any BOM(s) to your Purchase then the bulk select interface will be filtered to Assets
+          associated with the BOM(s).
         </p>
       </div>
       <div class="walkthrough-image">
@@ -263,23 +256,25 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <p>
           <strong>Create a Delivery</strong><br>
-          Deliveries are used to track what you have recieved. They can be associated with multiple Purchases indepenant
-          of a Assets own association with a Purchase.
+          Deliveries are used to track what you have recieved. They can be associated with multiple Purchases independent
+          of an Asset's own association with a Purchase.
         </p>
         <p>
           Deliveries can be created on their own using the <strong>Add</strong> buttons.</br>
-          Or from a Purchase using the <strong>Create New Purchase</strong> button when viewing the Purchase which will
+          Or from a Purchase using the <strong>Create New Delivery</strong> button when viewing the Purchase which will
           automatically associate this Delivery with that object.
         </p>
         <p>
-          Once a Delivery has been created you can create new Assets and associate them with the Purchase while viewing
-          the Purchase using the <strong>Create New Asset</strong> button.<br>
-          If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select
-          interface, if you added a Purchase(s) to your Delivery then the bulk select interface will be filtered to
-          Asset associated with that Purchase(s).
-          <div class="note">It is recommended to set the Delivery's Site and Location fields to the Site and Location of
-            where the Asset(s) are being delivered to before allocation of Assets to the Delivery takes place. When done
-            in this ordedr Inventory Plus will update the Assets Site and Location as well.</div>
+          Once a Delivery has been created you can create new Assets and associate them with the Delivery using the
+          <strong>Create New Asset</strong> button.<br>
+          If the Assets already exist, use the <stong>Assign Existing Assets</stong> button and the bulk select
+          interface, if you added any Purchase(s) to your Delivery then the bulk select interface will be filtered to
+          Assets associated with the Purchase(s).
+          <div class="note">
+            It is recommended to set the Delivery's Site and Location fields to the Site and Location of where the
+            Asset(s) are being delivered to before allocation of Assets to the Delivery takes place. When done in this
+            order, Inventory Plus will update the Assets' Site and Location as well.
+          </div>
         </p>
       </div>
       <div class="walkthrough-image">
@@ -291,20 +286,20 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <strong>Scanning Serial Numbers in Bulk</strong><br>
         <p>
-          Serial numbers can be added to assets in bulk using the <strong>Scan</strong> button on the <a
+          Serial numbers can be added to Assets in bulk using the <strong>Scan</strong> button on the <a
             href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets page</a>.
           <ul>
-            <li>On the <a href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets page</a>, select the assets
+            <li>On the <a href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets page</a>, select the Assets
               you want to add</li>
-            <li>At the bottom of the page select the <strong>Scan</strong> button</li>
+            <li>At the bottom of the page, select the <strong>Scan</strong> button</li>
             <li>The Bulk Scan form has a single textarea, add serial numbers one line per serial number</li>
-            <li>Why you apply the changes the serial numbers are assigned to the selected objects</li>
+            <li>When you apply the changes, the serial numbers are assigned to the selected objects</li>
           </ul>
-          <div class="alert alert-info bg-info-subtle"><i class="mdi mdi-information-outline"></i>You can enter serial
-            numbers by hand or with a scanner if your serial numbers are on
-            barcodes. The
-            form validates your entries and will tell you when enough have been entered, this is to help you when
-            scanning large numbers of serial numbers to detect when a mistake may have been made.</div>
+          <div class="alert alert-info bg-info-subtle"><i class="mdi mdi-information-outline"></i>
+            You can enter serial numbers by hand or with a scanner if your serial numbers are on barcodes. The form
+            validates your entries and will tell you when enough have been entered, this is to help you when scanning
+            large numbers of serial numbers to detect when a mistake may have been made.
+          </div>
         </p>
       </div>
       <div class="walkthrough-image">
@@ -316,13 +311,13 @@
       <div id="walkthrough-steps-content" class="walkthrough-steps-content">
         <strong>Deploying Assets</strong><br>
         <p>
-          Netbox Devices and Modules can be created from Assets by selecting any unallocated asset and selecting
-          <strong>Create Device</strong> button, if the device is already allocated the button will be grey'd out.
+          Netbox Devices and Modules can be created from Assets by selecting any unallocated asset and selecting the
+          <strong>Create Device</strong> button, if the device is already allocated the button will be greyed out.
         </p>
-        <p>If there is an existing Device or Module you can associate that device with the <strong>Edit
-            Assignement</strong>button</p>
         <p>
-
+          If there is an existing Device or Module you can associate that device with, click the <strong>Edit
+          Assignement</strong> button.
+        </p>
       </div>
       <div class="walkthrough-image">
         <img id="walkthrough-image" src="{% static 'netbox_inventory/deploy.jpg' %}" alt="Step preview">
@@ -372,12 +367,12 @@
   }
 
   document.addEventListener('click', function (e) {
-    if (e.target.attributes.id.value == 'walkthrough-prev' && currentStepIndex > 0) {
+    if (e.target.attributes.id.value === 'walkthrough-prev' && currentStepIndex > 0) {
       currentStepIndex--;
       showStepByName(stepOrder[currentStepIndex]);
     }
 
-    if (e.target.attributes.id.value = 'walkthrough-next' && currentStepIndex < stepOrder.length - 1) {
+    if (e.target.attributes.id.value === 'walkthrough-next' && currentStepIndex < stepOrder.length - 1) {
       currentStepIndex++;
       showStepByName(stepOrder[currentStepIndex]);
     }
