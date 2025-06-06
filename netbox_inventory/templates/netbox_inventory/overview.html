@@ -66,14 +66,185 @@
   <div class="walkthrough-container">
     <div class="walkthrough-steps">
       <h1>Welcome to NetBox Inventory Plus</h1>
-      <div id="walkthrough-steps-content" class="walkthrough-steps-content"></div>
+
+      <div class="walkthrough-step" data-step="intro">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <p>
+          <strong>Introduction</strong><br>
+            The overview is intended to be a guide to the intended workflows when using Inventory Plus. But you aren't
+            required to use all objects to manage your Assets.</br>
+            The bare minimum required is the Asset object, everything else is optional.
+          </p>
+          <p>
+            <strong>Full Asset Creation</strong>
+            <ul>
+              <li>Add Supplier</li>
+              <li>Add Bill of Materials (BOM)</li>
+              <li><strong>Create Assets</strong> from new BOM <span class="info">So the Assets are associated with the
+                  BOM</span></li>
+              <li>Add Purchase</li>
+              <li><strong>Assign Existing Assets</strong> with Purchase</li>
+              <li>Add Delivery</li>
+              <li><strong>Assign Existing Assets</strong> with Deliver</li>
+              <li>Scan Serial Numbers in Bulk</li>
+              <li>Deploying Assets to Devices and Modules</li>
+            </ul>
+            <strong>Transfering Assets</strong></br>
+            Inventory Plus allows you to track the transfer of assets between location. This lets you know where your assets including with a courier in transit.
+            <ul>
+              <li>Add Courier</li>
+              <li>Add Transfer</li>
+              <li><strong>Assign Existing Assets</strong> with Transfer</li>
+              <li>Update Transfer on courier pickup</li>
+              <li>Add Delivery</li>
+              <li><strong>Assign Existing Assets</strong> with Deliver</li>
+            </ul>
+            <div class="info">Both the workflows above update the status of the BOM's, Purchases, Deliveries, Transferes and Assets automatically at stages are complete.</div>
+          </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/intro.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="asset">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <p>
+          <strong>Create a Asset</strong><br>
+          Assets can be created on their own using the <strong>Add</strong> buttons.</br>
+          From a Bill of Materials, Purchase or Delivery using the <strong>Create New Asset</strong> button.</br>
+          Or by using Bulk Import or the API.
+        </p>
+        <p>
+          In addition to the different ways to start the Asset creation process the <a
+              href="{% url 'plugins:netbox_inventory:asset_add' %}">Create Asset</a> page has the option to create indvidual Assets or Assets in bulk using a supplied quantity.
+        </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/asset.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="supplier">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <p>
+          <strong>Create a Supplier</strong><br>
+          Create a new <a href="{% url 'plugins:netbox_inventory:supplier_add' %}">Supplier</a> to be associate with a BOM. Not to be confused with
+          Manufacturers, Suppliers are the <strong>vendors</strong> of the physical products your assets are purchased from.</p>
+          <p>
+          For example, if you have a Cisco switch and are purchasing it from ACME Networking Equipment, the supplier name would be 'ACME Networking Equipment'.
+          </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/supplier.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="bom">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <p>
+          <strong>Create a BOM</strong><br>
+          A BOM is created so you can associate a set of asset you require but haven't yet purchased.
+          </p>
+          <p>
+          BOM's can be created on their own using the <a href="{% url 'plugins:netbox_inventory:bom_add' %}">Add</a> buttons.</br>
+          Or from a Purchase using the <strong>Create New Purchase</strong> button when viewing the Purchase which will automatically associate this BOM with that object if you've done things out of order.         
+          </p>
+          <p>
+            Once a BOM has been created you can create new Assets and associate them with the BOM while viewing the BOM using the <strong>Create New Asset</strong> button.<br>
+            If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select interface.
+          </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/bom.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="purchase">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <p>
+          <strong>Create a Purchase</strong><br>
+          Purchase are used to track what you are ordering. They can be associated with multiple BOM's indepenant of a Assets own association with a BOM.
+          </p>
+          <p>
+          Purchases can be created on their own using the <strong>Add</strong> buttons.</br>
+          Or from a BOM or Purchase using the <strong>Create New Purchase</strong> button when viewing the BOM or Purchase which will automatically associate this Purchase with that object.         
+          </p>
+                 <p>
+            Once a Purchase has been created you can create new Assets and associate them with the Purchase while viewing the Purchase using the <strong>Create New Asset</strong> button.<br>
+            If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select interface, if you added a BOM(s) to your Purchase then the bulk select interface will be filtered to Asset associated with that BOM(s).
+          </p>
+          </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/purchase.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="delivery">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+                    <p>
+          <strong>Create a Delivery</strong><br>
+          Deliveries are used to track what you have recieved. They can be associated with multiple Purchases indepenant of a Assets own association with a Purchase.
+          </p>
+          <p>
+          Deliveries can be created on their own using the <strong>Add</strong> buttons.</br>
+          Or from a Purchase using the <strong>Create New Purchase</strong> button when viewing the Purchase which will automatically associate this Delivery with that object.         
+          </p>
+                 <p>
+            Once a Delivery has been created you can create new Assets and associate them with the Purchase while viewing the Purchase using the <strong>Create New Asset</strong> button.<br>
+            If the assets already exist use the <stong>Assign Existing Assets</stong> button and the bulk select interface, if you added a Purchase(s) to your Delivery then the bulk select interface will be filtered to Asset associated with that Purchase(s).
+            <div class="note">It is recommended to set the Delivery's Site and Location fields to the Site and Location of where the Asset(s) are being delivered to before allocation of Assets to the Delivery takes place. When done in this ordedr Inventory Plus will update the Assets Site and Location as well.</div>
+          </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/delivery.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="scanning">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <strong>Scanning Serial Numbers in Bulk</strong><br>
+          <p>
+            Serial numbers can be added to assets in bulk using the <strong>Scan</strong> button on the <a
+              href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets page</a>.
+            <ul>
+              <li>On the <a href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets page</a>, select the assets
+                you want to add</li>
+              <li>At the bottom of the page select the <strong>Scan</strong> button</li>
+              <li>The Bulk Scan form has a single textarea, add serial numbers one line per serial number</li>
+              <li>Why you apply the changes the serial numbers are assigned to the selected objects</li>
+            </ul>
+            <div class="info">You can enter serial numbers by hand or with a scanner if your serial numbers are on barcodes. The
+              form validates your entries and will tell you when enough have been entered, this is to help you when
+              scanning large numbers of serial numbers to detect when a mistake may have been made.</div>
+          </p>
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/scanning.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
+      <div class="walkthrough-step" data-step="deploy">
+        <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+          <strong>Deploying Assets</strong><br>
+          <p>
+            Netbox Devices and Modules can be created from Assets by selecting any unallocated asset and selecting
+            <strong>Create Device</strong> button, if the device is already allocated the button will be grey'd out.
+          </p>
+          <p>If there is an existing Device or Module you can associate that device with the <strong>Edit
+              Assignement</strong>button</p>
+          <p>
+
+        </div>
+        <div class="walkthrough-image">
+          <img id="walkthrough-image" src="{% static 'netbox_inventory/deploy.jpg' %}" alt="Step preview">
+        </div>
+      </div>
+
       <div class="walkthrough-nav">
         <span id="walkthrough-prev" class="walkthrough-arrow mdi mdi-chevron-left"></span>
         <span id="walkthrough-next" class="walkthrough-arrow mdi mdi-chevron-right"></span>
       </div>
-    </div>
-    <div class="walkthrough-image">
-      <img id="walkthrough-image" src="{% static 'netbox_inventory/step1.jpg' %}" alt="Step preview">
     </div>
   </div>
   <div id="walkthrough-modal" class="walkthrough-modal" tabindex="-1">
@@ -81,131 +252,50 @@
     <img id="walkthrough-modal-img" src="" alt="Full-size preview">
   </div>
   <script>
-    const steps = [
-      {
-        html: `<strong>1. Create A Supplier</strong><br>
-        Create a new <a href="{% url 'plugins:netbox_inventory:supplier_add' %}">Supplier</a>. Not to be confused with
-        Manufacturers, Suppliers are the <strong>vendors</strong> of the physical products your assets are based on.
-        For example, if you have a Cisco switch from Cisco Australia, the supplier name would be 'Cisco Australia' and
-        the slug would be 'cisco-australia'.`,
-        img: "{% static 'netbox_inventory/step1.jpg' %}"
-      },
-      {
-        html: `<strong>2. Create a BOM</strong><br>
-        Create a new <a href="{% url 'plugins:netbox_inventory:bom_add' %}">BOM</a>. A BOM (Bill of Materials) is a
-        list of assets with the intention of being purchased. BOMs are required to define a name and a status. If you
-        are unsure on the BOM's status, 'Planned' is a good default. Click on the BOM's name to view its details 
-        page.<br>
-        <strong>Note:</strong> BOMs are not required to be created in order to create purchases. BOMs are a way to
-        group assets together for the purpose of purchasing. If you are unsure if you need a BOM, you probably
-        don't.`,
-        img: "{% static 'netbox_inventory/step2.jpg' %}"
-      },
-      {
-        html: `<strong>3. Create And Assign An Asset To The BOM</strong><br>
-        This can be done easily in the BOM's details page. You should see two tables; one labelled
-        <strong>Purchases</strong> and another labelled <strong>BOM Assets</strong>. Each table will have two buttons
-        to the right of their headers; 'Create New' and 'Add Existing'. Click on <strong>Create New Asset</strong> to
-        open the Asset creation form. You should notice the 'BOM' field on this form is automatically set to the one
-        you just created. Assets are representations of devices, modules, racks or other inventory items in your
-        network. Assets are required to define a device/module/inventory item/rack type and a status. If you are adding
-        an asset to the BOM, you should set the status to 'Planned'. Once completed, click <strong>Create</strong> to
-        create the Asset. You will be redirected to the BOM details page and the Asset you just created should now be
-        listed in the <strong>BOM Assets</strong> table.`,
-        img: "{% static 'netbox_inventory/step3.jpg' %}"
-      },
-      {
-        html: `<strong>4. Create A Purchase And Assign The BOM</strong><br>
-        On the BOM details page, click the <strong>Create New Purchase</strong> button on the
-        <strong>Purchases</strong> table to create a new Purchase and automatically associate this BOM with it. The
-        Purchase creation form will open and the BOM field will be set to the one you created earlier. Purchases are
-        required to define a Supplier, a name, and a status. If you are unsure on the Purchase's status, 'Open' is a
-        good default. Once completed, click on the Purchase to view its details page.`,
-        img: "{% static 'netbox_inventory/step4.jpg' %}"
-      },
-      {
-        html: `<strong>5. Assign Assets To The Purchase</strong><br>
-        On the Purchase details page, you should see three tables; <strong>BOMs</strong>, <strong>Deliveries</strong>,
-        and <strong>Purchased Assets</strong>. The BOMs table should be assigned the BOM you created earlier. It is
-        useful to think of a Purchase as a checklist for your BOMs, adding Assets as they are ordered. When an Asset is
-        purchased, click the <strong>Assign Existing Assets</strong> button to add it to this Purchase. The list of
-        Assets is filtered to only include those that are part of the associated BOM(s). Once assigned, you will notice
-        that the Asset's status is updated to 'Ordered' automatically.`,
-        img: "{% static 'netbox_inventory/step5.jpg' %}"
-      },
-      {
-        html: `<strong>6. Create A Delivery From The Purchase</strong><br>
-        Back on the Purchase details page, click the <strong>Create New Delivery</strong> button to create a Delivery
-        and assign the current Purchase to it. You should see that the Purchase has automatically been added to the
-        Purchases field in the form. Deliveries are also required to define a name. Once created, click on the Delivery
-        in the table to go to its details page.<br>
-        <strong>Note:</strong> Though not required, it is recommended to set the Delivery's site and location fields to
-        the site and location of where the Asset(s) are being delivered to.`,
-        img: "{% static 'netbox_inventory/step6.jpg' %}"
-      },
-      {
-        html: `<strong>7. Assign Assets To The Delivery</strong><br>
-        On the Delivery details page, you'll see two tables; <strong>Purchases</strong> and
-        <strong>Delivered Assets</strong>. When an Asset is delivered, click the
-        <strong>Assign Existing Assets</strong> button to add it to this Delivery. Like in step 5, the list of Assets
-        here is filtered to only include the Assets that are part of the Delivery's assigned Purchase(s). Any Assets
-        assigned from here will automatically have their status updated to 'Stored' and their storage_site and
-        storage_location fields updated to the site and location of the Delivery.`,
-        img: "{% static 'netbox_inventory/step7.jpg' %}"
-      },
-      {
-        html: `<strong>What's Next?</strong><br>
-        Congratulations! You've successfully completed the basics of using NetBox Inventory Plus. From here, you can
-        further explore the features of the plugin, such as:
-        <ul>
-          <li>Bulk scanning serial numbers onto <a href="{% url 'plugins:netbox_inventory:asset_list' %}">Assets</a></li>
-          <li>Assigning Assets to Devices, Modules, and Racks in your network</li>
-          <li>Creating <a href="{% url 'plugins:netbox_inventory:courier_list' %}">Couriers</a> to handle and track
-            <a href="{% url 'plugins:netbox_inventory:transfer_list' %}">Transfers</a> of Assets</li>
-        </ul>
-        <p>For more information, please refer to the README file on our
-          <a href="https://github.com/sol1/netbox-inventory-plus" target="_blank">GitHub repository</a>.`,
-        img: "{% static 'netbox_inventory/step8.jpg' %}"
-      },
+    const stepOrder = [
+      "intro",
+      "asset",
+      "supplier",
+      "bom",
+      "purchase",
+      "delivery",
+      "scanning",
+      "deploy"
     ];
 
-    let currentStep = 0;
 
-    function updateWalkthrough() {
-      document.getElementById('walkthrough-steps-content').innerHTML = steps[currentStep].html;
-      document.getElementById('walkthrough-image').src = steps[currentStep].img;
-      document.getElementById('walkthrough-prev').classList.toggle('disabled', currentStep === 0);
-      document.getElementById('walkthrough-next').classList.toggle('disabled', currentStep === steps.length - 1);
+    let currentStepIndex = 0;
+
+    const allSteps = document.querySelectorAll('.walkthrough-step');
+
+    function showStepByName(name) {
+      allSteps.forEach(step => {
+        step.hidden = step.dataset.stepName !== name;
+      });
+
+      const current = document.querySelector(`.walkthrough-step[data-step="${name}"]`);
+      if (!current) return;
+
+      const prevBtn = current.querySelector('.walkthrough-prev');
+      const nextBtn = current.querySelector('.walkthrough-next');
+
+      if (prevBtn) prevBtn.classList.toggle('disabled', currentStepIndex === 0);
+      if (nextBtn) nextBtn.classList.toggle('disabled', currentStepIndex === stepOrder.length - 1);
     }
 
-    document.getElementById('walkthrough-prev').onclick = function() {
-      if (currentStep > 0) { currentStep--; updateWalkthrough(); }
-    };
-    document.getElementById('walkthrough-next').onclick = function() {
-      if (currentStep < steps.length - 1) { currentStep++; updateWalkthrough(); }
-    };
-
-    const walkthroughImage = document.getElementById('walkthrough-image');
-    const walkthroughModal = document.getElementById('walkthrough-modal');
-    const walkthroughModalImg = document.getElementById('walkthrough-modal-img');
-    const walkthroughModalClose = document.getElementById('walkthrough-modal-close');
-
-    walkthroughImage.onclick = function() {
-      walkthroughModalImg.src = steps[currentStep].img;
-      walkthroughModal.classList.add('active');
-    };
-    walkthroughModalClose.onclick = function() {
-      walkthroughModal.classList.remove('active');
-      walkthroughModalImg.src = '';
-    };
-    walkthroughModal.onclick = function(e) {
-      if (e.target === walkthroughModal) {
-        walkthroughModal.classList.remove('active');
-        walkthroughModalImg.src = '';
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('walkthrough-prev') && currentStepIndex > 0) {
+        currentStepIndex--;
+        showStepByName(stepOrder[currentStepIndex]);
       }
-    };
 
-    updateWalkthrough();
+      if (e.target.classList.contains('walkthrough-next') && currentStepIndex < stepOrder.length - 1) {
+        currentStepIndex++;
+        showStepByName(stepOrder[currentStepIndex]);
+      }
+    });
+
+    showStepByName(stepOrder[currentStepIndex]); // initial render
   </script>
 {% endblock content %}
 
