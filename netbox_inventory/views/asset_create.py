@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import redirect
 
 from dcim.models import Device, InventoryItem, Module, Rack
@@ -86,11 +87,15 @@ class ObjectAssetCreateView(generic.ObjectEditView):
         if form.is_valid():
             asset = form.save(commit=False)
             setattr(asset, self.related_field, self.related_object)
+            asset.update_status()
             asset.full_clean()
             asset.save()
+            messages.success(
+                request, f"A new Asset: {asset} has been created and assigned to {self.related_object}."
+            )
             return_url = request.GET.get('return_url', '/')
             return redirect(return_url if return_url else '/')
-
+        messages.error(request, 'There was an error creating the object.')
         return self.render(request, form=form)
 
 
