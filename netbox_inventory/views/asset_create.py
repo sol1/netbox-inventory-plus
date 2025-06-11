@@ -1,3 +1,5 @@
+from django.shortcuts import redirect
+
 from dcim.models import Device, InventoryItem, Module, Rack
 from netbox.views import generic
 
@@ -43,6 +45,55 @@ class AssetCreateView(generic.ObjectEditView):
         return context
 
 
+class ObjectAssetCreateView(generic.ObjectEditView):
+    queryset = Asset.objects.all()
+    form = AssetForm
+    template_name = 'netbox_inventory/asset_edit.html'
+
+    related_model = None
+
+    @property
+    def related_field(self):
+        if not self.related_model:
+            raise ValueError("The related_model attribute must be set in the subclass.")
+        return self.related_model.__name__.lower()
+
+    @property
+    def related_type_field(self):
+        return f"{self.related_field}_type"
+
+    @property
+    def related_object(self):
+        if not hasattr(self, '_related_object'):
+            self._related_object = self.related_model.objects.get(pk=self.kwargs.get('pk'))
+        return self._related_object
+
+    def get_object(self, **kwargs):
+        kwargs = {
+            self.related_type_field: getattr(self.related_object, f'{self.related_field}_type'),
+        }
+        return Asset(**kwargs)
+
+    def get_extra_context(self, request, instance):
+        context = super().get_extra_context(request, instance)
+        context[self.related_field] = self.related_object
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object(**kwargs)
+        form = self.form(request.POST, request.FILES, instance=self.object)
+
+        if form.is_valid():
+            asset = form.save(commit=False)
+            setattr(asset, self.related_field, self.related_object)
+            asset.full_clean()
+            asset.save()
+            return_url = request.GET.get('return_url', '/')
+            return redirect(return_url if return_url else '/')
+
+        return self.render(request, form=form)
+
+
 class AssetDeviceCreateView(AssetCreateView):
     queryset = Device.objects.all()
     form = AssetDeviceCreateForm
@@ -80,41 +131,17 @@ class AssetRackCreateView(AssetCreateView):
         return Rack(assigned_asset=self.asset)
 
 
-class DeviceAssetCreateView(AssetCreateView):
-    queryset = Device.objects.all()
-    form = AssetForm
-    template_name = 'netbox_inventory/asset_edit.html'
-
-    def get_object(self, **kwargs):
-        device = self.queryset.get(pk=kwargs.get('pk'))
-        return Asset(device_type=device.device_type)
+class DeviceAssetCreateView(ObjectAssetCreateView):
+    related_model = Device
 
 
-class ModuleAssetCreateView(AssetCreateView):
-    queryset = Module.objects.all()
-    form = AssetForm
-    template_name = 'netbox_inventory/asset_edit.html'
-
-    def get_object(self, **kwargs):
-        module = self.queryset.get(pk=kwargs.get('pk'))
-        return Asset(module_type=module.module_type)
+class ModuleAssetCreateView(ObjectAssetCreateView):
+    related_model = Module
 
 
-class InventoryItemAssetCreateView(AssetCreateView):
-    queryset = InventoryItem.objects.all()
-    form = AssetForm
-    template_name = 'netbox_inventory/asset_edit.html'
-
-    def get_object(self, **kwargs):
-        inventoryitem = self.queryset.get(pk=kwargs.get('pk'))
-        return Asset(inventoryitem_type=inventoryitem.inventoryitem_type)
+class InventoryItemAssetCreateView(ObjectAssetCreateView):
+    related_model = InventoryItem
 
 
-class RackAssetCreateView(AssetCreateView):
-    queryset = Rack.objects.all()
-    form = AssetForm
-    template_name = 'netbox_inventory/asset_edit.html'
-
-    def get_object(self, **kwargs):
-        rack = self.queryset.get(pk=kwargs.get('pk'))
-        return Asset(rack_type=rack.rack_type)
+class RackAssetCreateView(ObjectAssetCreateView):
+    related_model = Rack
