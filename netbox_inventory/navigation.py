@@ -13,7 +13,6 @@ overview_items = (
     PluginMenuItem(
         link='plugins:netbox_inventory:overview',
         link_text='Overview',
-        permissions=['netbox_inventory.view_overview'],
     ),
 )
 
