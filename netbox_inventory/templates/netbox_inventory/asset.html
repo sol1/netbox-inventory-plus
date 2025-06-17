@@ -80,7 +80,7 @@
                   <i class="mdi mdi-vector-difference-ba" aria-hidden="true"></i> Create {{ object.get_kind_display }}
                 </a>
               {% else %}
-                <a href="{% url 'plugins:netbox_inventory:asset_'|add:object.kind|add:'_create' %}?asset_id={{ object.pk }}" class="btn btn-sm btn-ghost-green" title="Create a new {{ object.get_kind_display }} from this asset">
+                <a href="{% url 'plugins:netbox_inventory:asset_'|add:object.kind|add:'_create' %}?asset_id={{ object.pk }}&return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-ghost-green" title="Create a new {{ object.get_kind_display }} from this asset">
                   <i class="mdi mdi-vector-difference-ba" aria-hidden="true"></i> Create {{ object.get_kind_display }}
                 </a>
               {% endif %}

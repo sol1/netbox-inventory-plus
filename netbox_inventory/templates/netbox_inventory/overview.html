@@ -19,7 +19,14 @@
     padding-right: 1rem;
   }
 
+  .walkthrough-step {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+  }
+
   .walkthrough-steps-content {
+    flex: 1;
     height: 470px;
     overflow-y: auto;
     margin-bottom: 1rem;
@@ -27,15 +34,15 @@
   }
 
   .walkthrough-image {
-    flex: 1 1 0;
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
     padding-left: 1rem;
   }
 
   .walkthrough-image img {
-    max-width: 100%;
+    width: 580px;
     max-height: 440px;
     border-radius: 8px;
     box-shadow: 0 2px 8px #0001;
@@ -123,7 +130,7 @@
     <h1>Welcome to NetBox Inventory Plus</h1>
 
     <div class="walkthrough-step" data-step="intro">
-      <div id="walkthrough-steps-content" class="walkthrough-steps-content">
+      <div class="walkthrough-steps-content">
         <p>
           <strong>Introduction</strong><br>
           The overview is intended to be a guide to the intended workflows when using Inventory Plus. But you aren't
@@ -325,7 +332,7 @@
 
       </div>
       <div class="walkthrough-image">
-        <img id="walkthrough-image" src="{% static 'netbox_inventory/deploy.jpg' %}" alt="Step preview">
+        <img id="walkthrough-image" src="{% static 'netbox_inventory/deploy.png' %}" alt="Step preview">
       </div>
     </div>
 
