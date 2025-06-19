@@ -18,7 +18,7 @@ from ..models import (
     Supplier,
     Transfer,
 )
-from ..utils import get_tags_and_edit_protected_asset_fields
+from ..utils import get_status_for, get_tags_and_edit_protected_asset_fields
 
 __all__ = (
     'AssetForm',
@@ -203,8 +203,30 @@ class AssetForm(NetBoxModelForm):
             'eol_date': DatePicker(),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, related_object=None, related_field=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.related_object = related_object
+        self.related_field = related_field
+
+        # Only prefill fields if the form is being accessed from ObjectAssetCreateView and given the
+        # correct context.
+        if self.related_field and self.related_object:
+            # if related_object.serial:
+            #     self.initial['serial'] = related_object.serial
+            # if related_object.asset_tag:
+            #     self.initial['asset_tag'] = related_object.asset_tag
+            # if related_object.site:
+            #     self.initial['storage_site'] = related_object.site
+            # if related_object.location:
+            #     self.initial['storage_location'] = related_object.location
+            self.initial['status'] = get_status_for('used')
+
+            if 'manufacturer' in self.fields:
+                self.fields['manufacturer'].disabled = True
+
+            for field_name in ['device_type', 'module_type', 'inventoryitem_type', 'rack_type']:
+                if field_name in self.fields:
+                    self.fields[field_name].disabled = True
 
         self._disable_fields_by_tags()
 

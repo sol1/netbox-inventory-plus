@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 from dcim.models import Device, InventoryItem, Module, Rack
 from netbox.views import generic
@@ -16,7 +16,6 @@ __all__ = (
     'AssetRackCreateView',
     'DeviceAssetCreateView',
     'ModuleAssetCreateView',
-    'InventoryItemAssetCreateView',
     'RackAssetCreateView',
 )
 
@@ -70,20 +69,70 @@ class ObjectAssetCreateView(generic.ObjectEditView):
             self._related_object = self.related_model.objects.get(pk=self.kwargs.get('pk'))
         return self._related_object
 
+    def validate_object(self, request):
+        if isinstance(self.related_object, Rack) and not self.related_object.rack_type:
+            messages.error(
+                request,
+                "Cannot create Asset: the selected Rack does not have an assigned rack_type."
+            )
+            return False
+
+        if isinstance(self.related_object, InventoryItem):
+            if not hasattr(self.related_object, 'inventoryitem_type') or not self.related_object.inventoryitem_type:
+                messages.error(
+                    request,
+                    "Cannot create Asset: the selected Inventory Item does not have an assigned inventoryitem_type."
+                )
+                return False
+
+        return True
+
     def get_object(self, **kwargs):
-        kwargs = {
-            self.related_type_field: getattr(self.related_object, f'{self.related_field}_type'),
-        }
-        return Asset(**kwargs)
+        related_type = getattr(self.related_object, f'{self.related_field}_type', None)
+        return Asset(**{self.related_type_field: related_type})
 
     def get_extra_context(self, request, instance):
         context = super().get_extra_context(request, instance)
         context[self.related_field] = self.related_object
+        context['object_asset_create'] = True
+        context['return_url'] = self.related_object.get_absolute_url()
         return context
+
+    def render_form(self, request, form):
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+                "object": self.object,
+                **self.get_extra_context(request, self.object)
+            }
+        )
+
+    def get(self, request, *args, **kwargs):
+        if not self.validate_object(request):
+            return redirect(
+                request.GET.get('return_url') or self.related_object.get_absolute_url()
+            )
+
+        self.object = self.get_object(**kwargs)
+        form = self.form(
+            instance=self.object,
+            related_object=self.related_object,
+            related_field=self.related_field,
+        )
+
+        return self.render_form(request, form)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object(**kwargs)
-        form = self.form(request.POST, request.FILES, instance=self.object)
+        form = self.form(
+            request.POST,
+            request.FILES,
+            instance=self.object,
+            related_object=self.related_object,
+            related_field=self.related_field,
+        )
 
         if form.is_valid():
             asset = form.save(commit=False)
@@ -96,16 +145,18 @@ class ObjectAssetCreateView(generic.ObjectEditView):
                     request,
                     f"A new Asset: {asset} has been created and assigned to {self.related_object}."
                 )
+                return redirect(request.GET.get('return_url', '/'))
             except ValidationError as e:
                 messages.error(
                     request,
                     f"Could not create Asset: {e.message_dict.get(self.related_field, e.messages)[0]}"
                 )
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
-            return redirect(request.GET.get('return_url', '/'))
-
-        messages.error(request, "There was an error with the submitted form.")
-        return self.render(request, form=form)
+        return self.render_form(request, form)
 
 
 class AssetDeviceCreateView(AssetCreateView):
@@ -151,10 +202,6 @@ class DeviceAssetCreateView(ObjectAssetCreateView):
 
 class ModuleAssetCreateView(ObjectAssetCreateView):
     related_model = Module
-
-
-class InventoryItemAssetCreateView(ObjectAssetCreateView):
-    related_model = InventoryItem
 
 
 class RackAssetCreateView(ObjectAssetCreateView):

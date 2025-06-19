@@ -8,13 +8,11 @@
     {% if perms.netbox_inventory.change_asset %}
     <div class="card-actions">
       {% with object|meta:"model_name" as object_type %}
-      {% if not asset.hardware %}
+      {% if not asset.hardware and not object_type == "inventoryitem" %}
         {% if object_type == "device" %}
         <a href="{% url 'plugins:netbox_inventory:device_asset_create' object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-ghost-green">
         {% elif object_type == "module" %}
         <a href="{% url 'plugins:netbox_inventory:module_asset_create' object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-ghost-green">
-        {% elif object_type == "inventoryitem" %}
-        <a href="{% url 'plugins:netbox_inventory:inventoryitem_asset_create' object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-ghost-green">
         {% elif object_type == "rack" %}
         <a href="{% url 'plugins:netbox_inventory:rack_asset_create' object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-ghost-green">
         {% endif %}
