@@ -94,11 +94,6 @@ urlpatterns = (
         name='module_asset_create',
     ),
     path(
-        'assets/inventoryitem/<int:pk>/create/',
-        views.InventoryItemAssetCreateView.as_view(),
-        name='inventoryitem_asset_create',
-    ),
-    path(
         'assets/rack/<int:pk>/create/',
         views.RackAssetCreateView.as_view(),
         name='rack_asset_create',

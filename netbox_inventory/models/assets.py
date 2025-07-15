@@ -600,8 +600,10 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if self.status == get_status_for('retired'):
             return
 
+        is_new = self.pk is None
         new_hw = getattr(self, self.kind)
-        old_status = get_prechange_field(self, 'status')
+        old_status = get_prechange_field(self, 'status') if not is_new else None
+
         used_status = get_status_for('used')
         stored_status = get_status_for('stored')
         ordered_status = get_status_for('ordered')
@@ -609,7 +611,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
 
         # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment;
         # do not change it
-        if not getattr(self, '_in_bulk_assignment', False) and old_status != self.status:
+        if not getattr(self, '_in_bulk_assignment', False) and old_status is not None and old_status != self.status:
             return
 
         # Used: Asset was assigned
