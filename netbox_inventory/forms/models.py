@@ -483,7 +483,7 @@ class CourierForm(NetBoxModelForm):
     slug = SlugField(slug_source='name')
     comments = CommentField()
 
-    fieldsets = (FieldSet('name', 'slug', 'description', 'tags', name='Supplier'),)
+    fieldsets = (FieldSet('name', 'slug', 'description', 'tags', name='Courier'),)
 
     class Meta:
         model = Courier

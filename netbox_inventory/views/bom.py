@@ -1,5 +1,4 @@
 from netbox.views import generic
-from netbox.views.generic import ObjectContactsView
 from utilities.query import count_related
 from utilities.views import register_model_view
 
@@ -13,7 +12,6 @@ __all__ = (
     'BOMBulkImportView',
     'BOMBulkEditView',
     'BOMBulkDeleteView',
-    'BOMContactsView',
 )
 
 
@@ -73,8 +71,3 @@ class BOMBulkEditView(generic.BulkEditView):
 class BOMBulkDeleteView(generic.BulkDeleteView):
     queryset = models.BOM.objects.all()
     table = tables.BOMTable
-
-
-@register_model_view(models.BOM, 'contacts')
-class BOMContactsView(ObjectContactsView):
-    queryset = models.BOM.objects.all()
