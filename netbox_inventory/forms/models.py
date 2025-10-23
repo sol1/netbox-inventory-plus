@@ -504,7 +504,7 @@ class TransferForm(NetBoxModelForm):
         label='Sender Group',
         help_text='Filter senders by group',
         initial_params={
-            'contacts': '$sender',
+            'contact': '$sender',
         },
     )
     sender = DynamicModelChoiceField(
@@ -522,7 +522,7 @@ class TransferForm(NetBoxModelForm):
         label='Recipient Group',
         help_text='Filter recipients by group',
         initial_params={
-            'contacts': '$recipient',
+            'contact': '$recipient',
         },
     )
     recipient = DynamicModelChoiceField(
