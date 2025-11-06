@@ -15,6 +15,7 @@ from utilities.forms import ConfirmationForm, restrict_form_fields
 from utilities.views import register_model_view
 
 from .. import filtersets, forms, models, tables
+from ..object_actions import BulkScan
 from ..template_content import EOL_PROGRESSBAR, WARRANTY_PROGRESSBAR
 from ..utils import (
     get_tags_and_edit_protected_asset_fields,
@@ -26,6 +27,7 @@ __all__ = (
     "AssetListView",
     "AssetBulkCreateView",
     "AssetEditView",
+    "AssetBulkScanView",
     "AssetDeleteView",
     "AssetBulkImportView",
     "AssetBulkEditView",
@@ -66,8 +68,7 @@ class AssetListView(generic.ObjectListView):
     table = tables.AssetTable
     filterset = filtersets.AssetFilterSet
     filterset_form = forms.AssetFilterForm
-    template_name = "netbox_inventory/asset_list.html"
-    actions = generic.ObjectListView.actions
+    actions = (*generic.ObjectListView.actions, BulkScan)
 
 
 @register_model_view(models.Asset, "bulk_add", path="bulk-add", detail=False)
