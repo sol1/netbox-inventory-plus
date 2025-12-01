@@ -111,9 +111,6 @@ class AssetForm(NetBoxModelForm):
         null_option="None",
         label="Contact Group",
         help_text="Filter contacts by group",
-        initial_params={
-            "contacts": "$contact",
-        },
     )
     contact = DynamicModelChoiceField(
         queryset=Contact.objects.all(),
@@ -195,7 +192,6 @@ class AssetForm(NetBoxModelForm):
             'tags',
             'description',
             'comments',
-            'storage_site',
         )
         widgets = {
             'warranty_start': DatePicker(),
