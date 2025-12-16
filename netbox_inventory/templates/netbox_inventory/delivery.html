@@ -68,7 +68,7 @@
           Purchases
           {% if perms.netbox_inventory.add_purchase %}
             <div class="card-actions">
-              <a href="{% url 'plugins:netbox_inventory:delivery_create_purchase' delivery_id=object.pk %}" class="btn btn-ghost-primary btn-sm">
+              <a href="{% url 'plugins:netbox_inventory:delivery_create_purchase' pk=object.pk %}" class="btn btn-ghost-primary btn-sm">
                 <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New Purchase
               </a>
               <a href="{% url 'plugins:netbox_inventory:delivery_assign_purchases' pk=object.pk %}" class="btn btn-ghost-primary btn-sm">

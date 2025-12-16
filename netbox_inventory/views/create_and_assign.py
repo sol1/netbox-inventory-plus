@@ -6,7 +6,6 @@ from netbox.views import generic
 from .. import forms, models
 
 __all__ = (
-    'CreateAndAssignView',
     'DeliveryCreatePurchaseView',
     'PurchaseCreateBOMView',
 )
@@ -23,9 +22,7 @@ class CreateAndAssignView(generic.ObjectEditView):
     template_name = 'netbox_inventory/create_and_assign.html'
 
     def dispatch(self, request, *args, **kwargs):
-        self.related_instance = get_object_or_404(
-            self.related_model, pk=kwargs['related_id']
-        )
+        self.related_instance = get_object_or_404(self.related_model, pk=kwargs.pop('pk'))
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, **kwargs):
@@ -58,11 +55,6 @@ class DeliveryCreatePurchaseView(CreateAndAssignView):
     related_model = models.Delivery
     related_field = 'purchases'
 
-    def dispatch(self, request, *args, **kwargs):
-        # Map delivery_id to related_id
-        kwargs['related_id'] = kwargs.pop('delivery_id', None)
-        return super().dispatch(request, *args, **kwargs)
-
     def get_extra_context(self, request, instance):
         context = super().get_extra_context(request, instance)
         context['object_type'] = 'purchase'
@@ -74,11 +66,6 @@ class PurchaseCreateBOMView(CreateAndAssignView):
     form = forms.BOMForm
     related_model = models.Purchase
     related_field = 'boms'
-
-    def dispatch(self, request, *args, **kwargs):
-        # Map purchase_id to related_id
-        kwargs['related_id'] = kwargs.pop('purchase_id', None)
-        return super().dispatch(request, *args, **kwargs)
 
     def get_extra_context(self, request, instance):
         context = super().get_extra_context(request, instance)

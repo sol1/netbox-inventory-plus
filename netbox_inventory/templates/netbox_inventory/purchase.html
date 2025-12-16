@@ -72,7 +72,7 @@
           BOMs
           {% if perms.netbox_inventory.add_bom %}
             <div class="card-actions">
-              <a href="{% url 'plugins:netbox_inventory:purchase_create_bom' purchase_id=object.pk %}" class="btn btn-ghost-primary btn-sm">
+              <a href="{% url 'plugins:netbox_inventory:purchase_create_bom' pk=object.pk %}" class="btn btn-ghost-primary btn-sm">
                 <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New BOM
               </a>
               <a href="{% url 'plugins:netbox_inventory:purchase_assign_boms' pk=object.pk %}" class="btn btn-ghost-primary btn-sm">
@@ -91,11 +91,6 @@
               <a href="{% url 'plugins:netbox_inventory:delivery_add' %}?purchases={{ object.pk }}&return_url={{ object.get_absolute_url }}" class="btn btn-ghost-primary btn-sm">
                 <i class="mdi mdi-plus-thick" aria-hidden="true"></i> Create New Delivery
               </a>
-              {% comment %}
-              <a href="{% url 'plugins:netbox_inventory:delivery_bulk_assign' %}?related_type=purchase&related_id={{ object.pk }}&related_name={{ object.name }}" class="btn btn-ghost-primary btn-sm">
-                <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i> Assign Existing Deliveries
-              </a>
-              {% endcomment %}
             </div>
           {% endif %}
         </h5>

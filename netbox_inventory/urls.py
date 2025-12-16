@@ -142,6 +142,11 @@ urlpatterns = (
         include(get_model_urls('netbox_inventory', 'purchase')),
     ),
     path(
+        'purchases/<int:pk>/add-bom/',
+        views.PurchaseCreateBOMView.as_view(),
+        name='purchase_create_bom'
+    ),
+    path(
         'purchases/<int:pk>/assign-assets/',
         views.AssignAssetsToPurchaseView.as_view(),
         name='purchase_assign_assets',
@@ -150,11 +155,6 @@ urlpatterns = (
         'purchases/<int:pk>/assign-boms/',
         views.AssignBOMsToPurchaseView.as_view(),
         name='purchase_assign_boms',
-    ),
-    path(
-        'purchases/<int:purchase_id>/add-bom/',
-        views.PurchaseCreateBOMView.as_view(),
-        name='purchase_create_bom'
     ),
     # Deliveries
     path(
@@ -176,6 +176,11 @@ urlpatterns = (
         include(get_model_urls('netbox_inventory', 'delivery')),
     ),
     path(
+        'deliveries/<int:pk>/add-purchase/',
+        views.DeliveryCreatePurchaseView.as_view(),
+        name='delivery_create_purchase',
+    ),
+    path(
         'deliveries/<int:pk>/assign-assets/',
         views.AssignAssetsToDeliveryView.as_view(),
         name='delivery_assign_assets',
@@ -184,11 +189,6 @@ urlpatterns = (
         'deliveries/<int:pk>/assign-purchases/',
         views.AssignPurchasesToDeliveryView.as_view(),
         name='delivery_assign_purchases',
-    ),
-    path(
-        'deliveries/<int:delivery_id>/add-purchase/',
-        views.DeliveryCreatePurchaseView.as_view(),
-        name='delivery_create_purchase',
     ),
     # Couriers
     path(
