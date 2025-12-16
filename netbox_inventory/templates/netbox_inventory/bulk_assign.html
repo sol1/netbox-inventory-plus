@@ -1,12 +1,18 @@
 {% extends 'generic/object_list.html' %}
 
-{% block title %}Bulk Assign {{ object_type_plural|capfirst }} to {{ related_name }}{% endblock %}
+{% block title %}Assign {{ object_type_plural|capfirst }} to {{ parent }}{% endblock %}
 
 {% block bulk_buttons %}
-  <form method="post" action="?related_type={{ related_type }}&related_id={{ related_id }}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">
-      Assign {{ object_type_plural|capfirst }} to {{ related_name }}
+  {% if table.rows|length > 0 %}
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">
+        Assign Selected {{ object_type_plural|capfirst }}
+      </button>
+    </form>
+  {% else %}
+    <button class="btn btn-secondary" disabled>
+      No {{ object_type_plural }} match the current criteria
     </button>
-  </form>
+  {% endif %}
 {% endblock %}

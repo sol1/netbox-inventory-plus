@@ -30,10 +30,11 @@ urlpatterns = (
         'assets/',
         include(get_model_urls('netbox_inventory', 'asset', detail=False)),
     ),
-    path('assets/bulk-assign/',
-        views.AssignToAssetView.as_view(),
-        name='asset_bulk_assign'
-    ),
+    # path(
+    #     'assets/bulk-assign/',
+    #     views.AssignToAssetView.as_view(),
+    #     name='asset_bulk_assign'
+    # ),
     path(
         'assets/<int:pk>/',
         include(get_model_urls('netbox_inventory', 'asset')),
@@ -112,27 +113,43 @@ urlpatterns = (
         'boms/',
         include(get_model_urls('netbox_inventory', 'bom', detail=False)),
     ),
-    path(
-        'boms/bulk-assign/',
-        views.AssignBOMsToPurchaseView.as_view(),
-        name='bom_bulk_assign',
-    ),
+    # path(
+    #     'boms/bulk-assign/',
+    #     views.AssignBOMsToPurchaseView.as_view(),
+    #     name='bom_bulk_assign',
+    # ),
     path(
         'boms/<int:pk>/',
         include(get_model_urls('netbox_inventory', 'bom')),
+    ),
+    path(
+        'boms/<int:pk>/assign-assets/',
+        views.AssignAssetsToBOMView.as_view(),
+        name='bom_assign_assets',
     ),
     # Purchases
     path(
         'purchases/',
         include(get_model_urls('netbox_inventory', 'purchase', detail=False)),
     ),
-    path('purchases/bulk-assign/',
-        views.AssignToPurchaseView.as_view(),
-        name='purchase_bulk_assign'
-    ),
+    # path(
+    #     'purchases/bulk-assign/',
+    #     views.AssignToPurchaseView.as_view(),
+    #     name='purchase_bulk_assign'
+    # ),
     path(
         'purchases/<int:pk>/',
         include(get_model_urls('netbox_inventory', 'purchase')),
+    ),
+    path(
+        'purchases/<int:pk>/assign-assets/',
+        views.AssignAssetsToPurchaseView.as_view(),
+        name='purchase_assign_assets',
+    ),
+    path(
+        'purchases/<int:pk>/assign-boms/',
+        views.AssignBOMsToPurchaseView.as_view(),
+        name='purchase_assign_boms',
     ),
     path(
         'purchases/<int:purchase_id>/add-bom/',
@@ -144,17 +161,29 @@ urlpatterns = (
         'deliveries/',
         include(get_model_urls('netbox_inventory', 'delivery', detail=False)),
     ),
-    path('deliveries/bulk-assign/',
-        views.AssignToDeliveryView.as_view(),
-        name='delivery_bulk_assign'
-    ),
-    path('deliveries/bulk-assign-purchases/',
-        views.AssignPurchasesToDeliveryView.as_view(),
-        name='delivery_bulk_assign_purchases'
-    ),
+    # path(
+    #     'deliveries/bulk-assign/',
+    #     views.AssignToDeliveryView.as_view(),
+    #     name='delivery_bulk_assign'
+    # ),
+    # path(
+    #     'deliveries/bulk-assign-purchases/',
+    #     views.AssignPurchasesToDeliveryView.as_view(),
+    #     name='delivery_bulk_assign_purchases'
+    # ),
     path(
         'deliveries/<int:pk>/',
         include(get_model_urls('netbox_inventory', 'delivery')),
+    ),
+    path(
+        'deliveries/<int:pk>/assign-assets/',
+        views.AssignAssetsToDeliveryView.as_view(),
+        name='delivery_assign_assets',
+    ),
+    path(
+        'deliveries/<int:pk>/assign-purchases/',
+        views.AssignPurchasesToDeliveryView.as_view(),
+        name='delivery_assign_purchases',
     ),
     path(
         'deliveries/<int:delivery_id>/add-purchase/',
