@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 
 from netbox.views import generic
@@ -122,9 +123,15 @@ class AssignRelatedObjectsView(generic.ObjectListView):
         self.parent = get_object_or_404(self.parent_model, pk=kwargs.pop('pk'))
         return super().dispatch(request, *args, **kwargs)
 
+    def annotate_queryset(self, queryset):
+        return queryset.annotate(
+            asset_count=Count('assets', distinct=True),
+        )
+
     def get_queryset(self, request):
         assigned_ids = getattr(self.parent, self.related_field).values_list('id', flat=True)
-        return self.related_model.objects.exclude(pk__in=assigned_ids)
+        qs = self.related_model.objects.exclude(pk__in=assigned_ids)
+        return self.annotate_queryset(qs)
 
     def get_extra_context(self, request):
         return {
