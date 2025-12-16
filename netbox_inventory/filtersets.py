@@ -23,7 +23,6 @@ from netbox.filtersets import NetBoxModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities import filters
-from utilities.filters import ContentTypeFilter
 
 from .choices import (
     AssetStatusChoices,
