@@ -25,6 +25,34 @@ from .utils import (
 
 logger = logging.getLogger('netbox.netbox_inventory.signals')
 
+@receiver(post_save, sender=Asset)
+def sync_hardware_serial_asset_tag(instance, created, **kwargs):
+    """
+    When an Asset is created or updated, sync its serial and asset_tag to the assigned hardware
+    (Device, Module, InventoryItem, Rack) if assigned.
+
+    Only enforces if `sync_hardware_serial_asset_tag` setting is true.
+    """
+    if not get_plugin_setting('sync_hardware_serial_asset_tag'):
+        return
+
+    hardware = instance.hardware
+    if not hardware:
+        return
+
+    changed = False
+    if not is_equal_none(hardware.serial, instance.serial):
+        hardware.serial = instance.serial
+        changed = True
+    if not is_equal_none(hardware.asset_tag, instance.asset_tag):
+        hardware.asset_tag = instance.asset_tag
+        changed = True
+
+    if changed:
+        hardware.full_clean()
+        hardware.save()
+        logger.info(f'Synced serial and asset tag from Asset {instance} to assigned {hardware}.')
+
 
 @receiver(pre_save, sender=Device)
 @receiver(pre_save, sender=Module)
