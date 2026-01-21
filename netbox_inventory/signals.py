@@ -3,6 +3,7 @@ import logging
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
+from django.utils.safestring import mark_safe
 
 from dcim.models import (
     Device,
@@ -78,8 +79,12 @@ def prevent_update_serial_asset_tag(instance, **kwargs):
         not is_equal_none(asset.serial, instance.serial)
         or not is_equal_none(asset.asset_tag, instance.asset_tag)
     ):
+        asset_url = instance.assigned_asset.get_absolute_url()
         raise AbortRequest(
-            f'Cannot change {asset.kind} serial and asset tag if asset is assigned. Please update via inventory > asset instead.'
+            mark_safe(
+                f'Cannot change {asset.kind} serial and asset tag if asset is assigned.'
+                f'Please update via <a href="{asset_url}">{instance.assigned_asset}</a> instead.'
+            )
         )
 
 
