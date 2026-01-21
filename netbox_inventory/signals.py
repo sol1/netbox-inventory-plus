@@ -82,8 +82,10 @@ def prevent_update_serial_asset_tag(instance, **kwargs):
         asset_url = instance.assigned_asset.get_absolute_url()
         raise AbortRequest(
             mark_safe(
-                f'Cannot change {asset.kind} serial and asset tag if asset is assigned.'
-                f'Please update via <a href="{asset_url}">{instance.assigned_asset}</a> instead.'
+                f'Serial/asset fields locked while {asset.kind} has an assigned asset. '
+                f'Update the current asset, '
+                f'<a href="{asset_url}">{instance.assigned_asset}</a>, '
+                f'or reassign to a matching existing asset.'
             )
         )
 
