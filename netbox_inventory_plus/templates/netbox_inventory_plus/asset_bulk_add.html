@@ -1,0 +1,18 @@
+
+{% extends 'netbox_inventory_plus/asset_edit.html' %}
+{% load static %}
+{% load form_helpers %}
+
+{% block title %}Add multiple assets{% endblock %}
+
+{% block tabs %}
+  {% include 'netbox_inventory_plus/inc/asset_edit_header.html' with active_tab='bulk_add' %}
+{% endblock %}
+
+
+{% block form %}
+  {% render_field form.count %}
+  {% with model_form as form %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}

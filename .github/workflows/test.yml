@@ -43,7 +43,7 @@ jobs:
           ref: ${{ matrix.netbox-version }}
           path: netbox
 
-      - name: install netbox_inventory
+      - name: install netbox_inventory_plus
         working-directory: netbox-inventory
         run: |
           pip install .
@@ -56,4 +56,4 @@ jobs:
       - name: Run tests
         working-directory: netbox
         run: |
-          python netbox/manage.py test netbox_inventory.tests -v 2
+          python netbox/manage.py test netbox_inventory_plus.tests -v 2
