@@ -1,8 +1,19 @@
+from dcim.models import (
+    Device,
+    DeviceType,
+    InventoryItem,
+    Location,
+    Manufacturer,
+    Module,
+    ModuleBay,
+    ModuleType,
+    Rack,
+    RackType,
+    Site,
+)
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.text import slugify
-
-from dcim.models import DeviceType, Location, Manufacturer, ModuleType, RackType, Site
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelImportForm
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities.forms import add_blank_choice
@@ -364,6 +375,28 @@ class AssetImportForm(NetBoxModelImportForm):
         help_text="Contact using this asset. It must exist before import.",
         required=False,
     )
+    device = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        to_field_name="name",
+        help_text="Device to assign this asset to.",
+        required=False,
+    )
+    module = forms.CharField(
+        required=False,
+        help_text="Module in the format 'device_name:module_bay'. Example: 'router01:Slot 1'.",
+    )
+    inventory_item = CSVModelChoiceField(
+        queryset=InventoryItem.objects.all(),
+        to_field_name="name",
+        help_text="Inventory item to assign this asset to.",
+        required=False,
+    )
+    rack = CSVModelChoiceField(
+        queryset=Rack.objects.all(),
+        to_field_name="name",
+        help_text="Rack to assign this asset to.",
+        required=False,
+    )
 
     class Meta:
         model = Asset
@@ -397,6 +430,10 @@ class AssetImportForm(NetBoxModelImportForm):
             "comments",
             "tenant",
             "contact",
+            "device",
+            "module",
+            "inventory_item",
+            "rack",
             "tags",
         )
 
@@ -452,6 +489,73 @@ class AssetImportForm(NetBoxModelImportForm):
                 f"Unable to find delivery {purchase} {delivery_name}"
             )
         return delivery
+
+    def clean_device(self):
+        hardware_kind = self.cleaned_data.get("hardware_kind")
+        device = self.cleaned_data.get("device")
+
+        if hardware_kind == "device" and device:
+            self.instance.device = device
+        return device
+
+    def clean_module(self):
+        hardware_kind = self.cleaned_data.get("hardware_kind")
+        module_value = self.cleaned_data.get("module")
+
+        if hardware_kind != "module":
+            return None
+
+        if not module_value:
+            raise forms.ValidationError(
+                "'module' must be specified for assets with 'hardware_kind=module'."
+            )
+
+        try:
+            device_name, module_bay_name = [s.strip() for s in module_value.split(":", 1)]
+        except ValueError:
+            raise forms.ValidationError(
+                "Module must be in format 'device_name:module_bay'."
+            )
+
+        try:
+            device = Device.objects.get(name=device_name)
+        except Device.DoesNotExist:
+            raise forms.ValidationError(
+                f"Device '{device_name}' not found."
+            )
+
+        try:
+            module_bay = ModuleBay.objects.get(device=device, name=module_bay_name)
+        except ModuleBay.DoesNotExist:
+            raise forms.ValidationError(
+                f"Module bay '{module_bay_name}' not found on device '{device_name}'."
+            )
+
+        try:
+            module = Module.objects.get(module_bay=module_bay)
+        except Module.DoesNotExist:
+            raise forms.ValidationError(
+                f"No module installed in bay '{module_bay_name}' on '{device_name}'."
+            )
+
+        self.instance.module = module
+        return module
+
+    def clean_inventory_item(self):
+        hardware_kind = self.cleaned_data.get("hardware_kind")
+        inventory_item = self.cleaned_data.get("inventory_item")
+
+        if hardware_kind == "inventoryitem" and inventory_item:
+            self.instance.inventoryitem = inventory_item
+        return inventory_item
+
+    def clean_rack(self):
+        hardware_kind = self.cleaned_data.get("hardware_kind")
+        rack = self.cleaned_data.get("rack")
+
+        if hardware_kind == "rack" and rack:
+            self.instance.rack = rack
+        return rack
 
     def __init__(self, data=None, *args, **kwargs):
         super().__init__(data, *args, **kwargs)
