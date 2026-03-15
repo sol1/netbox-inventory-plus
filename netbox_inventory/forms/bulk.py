@@ -383,7 +383,7 @@ class AssetImportForm(NetBoxModelImportForm):
     )
     module = forms.CharField(
         required=False,
-        help_text="Module in the format 'device_name:module_bay'. Example: 'router01:Slot 1'.",
+        help_text='Module to assign this asset to in the format "device_name:module_bay". Example: "router01:Slot 1".',
     )
     inventory_item = CSVModelChoiceField(
         queryset=InventoryItem.objects.all(),
@@ -511,10 +511,10 @@ class AssetImportForm(NetBoxModelImportForm):
             )
 
         try:
-            device_name, module_bay_name = [s.strip() for s in module_value.split(":", 1)]
+            device_name, module_bay_name = [s.strip() for s in module_value.split("__", 1)]
         except ValueError:
             raise forms.ValidationError(
-                "Module must be in format 'device_name:module_bay'."
+                "Module must be in format 'device_name__module_bay'."
             )
 
         try:
