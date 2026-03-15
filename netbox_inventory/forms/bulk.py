@@ -1,3 +1,7 @@
+from django import forms
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.text import slugify
+
 from dcim.models import (
     Device,
     DeviceType,
@@ -11,9 +15,6 @@ from dcim.models import (
     RackType,
     Site,
 )
-from django import forms
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.text import slugify
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelImportForm
 from tenancy.models import Contact, ContactGroup, Tenant
 from utilities.forms import add_blank_choice
