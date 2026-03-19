@@ -183,4 +183,9 @@ urlpatterns = (
         'transfers/<int:pk>/',
         include(get_model_urls('netbox_inventory', 'transfer')),
     ),
+    path(
+        'transfers/<int:pk>/assign-assets/',
+        views.AssignAssetsToTransferView.as_view(),
+        name='transfer_assign_assets',
+    ),
 )

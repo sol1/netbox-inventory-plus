@@ -10,6 +10,7 @@ __all__ = (
     'AssignAssetsToBOMView',
     'AssignAssetsToDeliveryView',
     'AssignAssetsToPurchaseView',
+    'AssignAssetsToTransferView',
     'AssignBOMsToPurchaseView',
     'AssignPurchasesToDeliveryView',
 )
@@ -103,6 +104,14 @@ class AssignAssetsToDeliveryView(AssignAssetsView):
     def scope_queryset(self, queryset):
         purchase_ids = self.parent.purchases.values_list('id', flat=True)
         return queryset.filter(purchase_id__in=purchase_ids, delivery__isnull=True)
+
+
+class AssignAssetsToTransferView(AssignAssetsView):
+    parent_model = models.Transfer
+    parent_attr_name = 'transfer'
+
+    def scope_queryset(self, queryset):
+        return queryset.filter(transfer__isnull=True)
 
 
 class AssignRelatedObjectsView(generic.ObjectListView):
