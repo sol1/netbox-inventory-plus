@@ -71,6 +71,7 @@ support older netbox version as per table below:
 |       4.3      |      3.5.x     |
 |       4.4      |      3.6.x     |
 |       4.5      |      3.7.x     |
+|       4.6      |      3.8.x     |
 
 ## Installing
 

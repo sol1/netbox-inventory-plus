@@ -11,8 +11,8 @@ class NetBoxInventoryConfig(PluginConfig):
     author = 'Sol1'
     author_email = 'support@sol1.com.au'
     base_url = 'inventory_plus'
-    min_version = '4.5.0'
-    max_version = '4.5.99'
+    min_version = '4.6.0'
+    max_version = '4.6.99'
     default_settings = {
         'top_level_menu': True,
         'planned_status_name': 'planned',
