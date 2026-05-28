@@ -42,7 +42,7 @@ statuses can be set as needed by each NetBox installation.
 Two statuses can have a special meaning. One to indicate asset is in storage and one
 to indicate asset is in use.
 
-netbox_inventory can automatically set status to the value specified in
+netbox_inventory_plus can automatically set status to the value specified in
 `used_status_name` configuration item when an asset is assigned to a device, module
 or inventory item.
 
@@ -55,7 +55,7 @@ To disable automatically changing status, set these two config parameters to `No
 
 With `asset_disable_editing_fields_for_tags` and `asset_disable_deletion_for_tags` you can prevent changes to specified asset data for assets that have certain tags attached. Changes are only prevented via web interface. API modifications are allowed.
 
-The idea is that an external system uses some assets stored in netbox_inventory, and you want to prevent accidental changes to data directly in NetBox web interface. Only that external system should modify the data.
+The idea is that an external system uses some assets stored in netbox_inventory_plus, and you want to prevent accidental changes to data directly in NetBox web interface. Only that external system should modify the data.
 
 ## Compatibility
 
@@ -68,6 +68,10 @@ support older netbox version as per table below:
 |       4.0      |      2.0.x     |
 |       4.1      |  2.1.x,2.2.x   |
 |       4.2      |      2.3.x     |
+|       4.3      |      3.5.x     |
+|       4.4      |      3.6.x     |
+|       4.5      |      3.7.x     |
+|       4.6      |      3.8.x     |
 
 ## Installing
 
@@ -101,11 +105,11 @@ After installation, enable the plugin in `/opt/netbox/netbox/netbox/configuratio
 
 ```python
 PLUGINS = [
-    'netbox_inventory'
+    'netbox_inventory_plus'
 ]
 
 PLUGINS_CONFIG = {
-    "netbox_inventory": {},
+    "netbox_inventory_plus": {},
 }
 ```
 
@@ -129,11 +133,11 @@ If you want to override the defaults for the plugin, you can do so in your via `
 
 ```python
 PLUGINS = [
-    'netbox_inventory'
+    'netbox_inventory_plus'
 ]
 
 PLUGINS_CONFIG = {
-    "netbox_inventory": {
+    "netbox_inventory_plus": {
         # Example settings below, see "Available settings"
         # in README.md for all possible settings
         "used_status_name": "used",
@@ -171,7 +175,7 @@ You can extend or define your own status choices for Asset, via [`FIELD_CHOICES`
 
 ```
 FIELD_CHOICES = {
-    'netbox_inventory.Asset.status+': (
+    'netbox_inventory_plus.Asset.status+': (
         ('repair', 'In repair', 'orange'),
     ),
 }
@@ -191,20 +195,20 @@ If you really want to store document in netbox itself, then consider using [netb
 
 ```python
 PLUGINS = [
-    'netbox_inventory',
+    'netbox_inventory_plus',
     'netbox_attachments',
 ]
 
 PLUGINS_CONFIG = {
     'netbox_attachments': {
-        'apps': ['netbox_inventory',],
+        'apps': ['netbox_inventory_plus',],
         'display_setting': {
-            "netbox_inventory.supplier": "left_page",
-            "netbox_inventory.purchase": "full_width_page",
-            "netbox_inventory.delivery": "righ_page",
-            "netbox_inventory.asset": "hidden",
-            "netbox_inventory.inventoryitemtype": "hidden",
-            "netbox_inventory.inventoryitemgroup": "hidden",
+            "netbox_inventory_plus.supplier": "left_page",
+            "netbox_inventory_plus.purchase": "full_width_page",
+            "netbox_inventory_plus.delivery": "righ_page",
+            "netbox_inventory_plus.asset": "hidden",
+            "netbox_inventory_plus.inventoryitemtype": "hidden",
+            "netbox_inventory_plus.inventoryitemgroup": "hidden",
         },
     },
 }

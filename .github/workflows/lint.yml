@@ -14,8 +14,8 @@ jobs:
 
       - uses: isort/isort-action@v1
         with:
-          sort-paths: "./netbox_inventory"
+          sort-paths: "./netbox_inventory_plus"
 
       - uses: astral-sh/ruff-action@v3
         with:
-          src: "./netbox_inventory"
+          src: "./netbox_inventory_plus"

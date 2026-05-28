@@ -35,5 +35,5 @@ REDIS = {
 SECRET_KEY = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 PLUGINS = [
-    'netbox_inventory',
+    'netbox_inventory_plus',
 ]

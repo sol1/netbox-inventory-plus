@@ -1,0 +1,26 @@
+from django.test import SimpleTestCase
+from django.urls import reverse
+
+from netbox_inventory_plus import __version__
+from netbox_inventory_plus.tests.custom import APITestCase
+
+
+class NetboxInventoryVersionTestCase(SimpleTestCase):
+    """
+    Test for netbox_inventory_plus package
+    """
+
+    def test_version(self):
+        assert __version__ == '3.8.0'
+
+
+class AppTest(APITestCase):
+    """
+    Test the availability of the plugin API root
+    """
+
+    def test_root(self):
+        url = reverse('plugins-api:netbox_inventory_plus-api:api-root')
+        response = self.client.get(f'{url}?format=api', **self.header)
+
+        self.assertEqual(response.status_code, 200)

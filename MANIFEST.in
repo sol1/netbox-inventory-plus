@@ -1,2 +1,2 @@
-recursive-include netbox_inventory/static *
-recursive-include netbox_inventory/templates *.html
+recursive-include netbox_inventory_plus/static *
+recursive-include netbox_inventory_plus/templates *.html

@@ -1,0 +1,310 @@
+from django.template import Template
+
+from netbox.plugins import PluginTemplateExtension
+
+from .models import Asset
+from .utils import query_located
+
+WARRANTY_PROGRESSBAR = """
+{% with record.warranty_progress as wp %}
+{% with record.warranty_remaining as wr %}
+{% with settings.PLUGINS_CONFIG.netbox_inventory_plus.asset_warranty_expire_warning_days as wthresh %}
+
+{% if wp is None and wr.days <= 0 %}
+  <div class="progress" role="progressbar">
+    <div class="progress-bar progress-bar-striped text-bg-danger" style="width:100%;">
+      Expired {{ record.warranty_end|timesince|split:','|first }} ago
+    </div>
+  </div>
+{% elif wp is None and wr.days > 0 %}
+  <div class="progress" role="progressbar">
+    <div class="progress-bar progress-bar-striped text-bg-{% if wthresh and wr.days < wthresh %}warning{% else %}success{% endif %}" style="width:100%;">
+      {{ record.warranty_end|timeuntil|split:','|first }}
+    </div>
+  </div>
+{% elif wp is None %}
+    {{ ""|placeholder }}
+{% else %}
+
+<div
+  class="progress"
+  role="progressbar"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="{% if wp < 0 %}0{% else %}{{ wp }}{% endif %}"
+>
+  <div
+    class="progress-bar text-bg-{% if wp >= 100 %}danger{% elif wthresh and wr.days < wthresh %}warning{% else %}success{% endif %}"
+    style="width: {% if wp < 0 %}0%{% else %}{{ wp }}%{% endif %};"
+  ></div>
+  {% if record.warranty_progress >= 100 %}
+    <span class="justify-content-center d-flex align-items-center position-absolute text-light w-100 h-100">Expired {{ record.warranty_end|timesince|split:','|first }} ago</span>
+  {% elif record.warranty_progress >= 35 %}
+    <span class="justify-content-center d-flex align-items-center position-absolute text-body-emphasis w-100 h-100">{{ record.warranty_end|timeuntil|split:','|first }}</span>
+  {% elif record.warranty_progress >= 0 %}
+    <span class="justify-content-center d-flex align-items-center position-absolute text-body-emphasis w-100 h-100">{{ record.warranty_end|timeuntil|split:','|first }}</span>
+  {% else %}
+    <span class="justify-content-center d-flex align-items-center position-absolute text-body-emphasis w-100 h-100">Starts in {{ record.warranty_start|timeuntil|split:','|first }}</span>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endwith wthresh %}
+{% endwith wr %}
+{% endwith wp %}
+"""
+
+EOL_PROGRESSBAR = """
+{% with record.eol_date as eol_date %}
+{% with record.current_date as current_date %}
+{% with record.eol_remaining as eol_remaining %}
+{% with settings.PLUGINS_CONFIG.netbox_inventory_plus.asset_eol_warning_days as wthresh %}
+
+{% if record.eol_progress is None %}
+  {{ ""|placeholder }}
+{% elif record.eol_progress >= 100 %}
+  <div class="progress" role="progressbar">
+    <div class="progress-bar progress-bar-striped text-bg-danger" style="width:100%;">
+      Expired {{ record.eol_date|timesince|split:','|first }} ago
+    </div>
+  </div>
+{% else %}
+  <div
+    class="progress"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="{{ record.eol_progress }}"
+  >
+    <div
+      class="progress-bar text-bg-{% if settings.PLUGINS_CONFIG.netbox_inventory_plus.asset_eol_warning_days and record.eol_remaining.days < settings.PLUGINS_CONFIG.netbox_inventory_plus.asset_eol_warning_days %}warning{% else %}success{% endif %}"
+      style="width: {{ record.eol_progress }}%;"
+    ></div>
+    <span class="justify-content-center d-flex align-items-center position-absolute text-body-emphasis w-100 h-100">
+      {{ record.eol_date|timeuntil|split:','|first }}
+    </span>
+  </div>
+{% endif %}
+
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
+"""
+
+class AssetInfoExtension(PluginTemplateExtension):
+    def left_page(self):
+        object = self.context.get('object')
+        asset = Asset.objects.filter(**{self.kind: object}).first()
+        context = {'asset': asset}
+        context['warranty_progressbar'] = Template(WARRANTY_PROGRESSBAR)
+        context['eol_progressbar'] = Template(EOL_PROGRESSBAR)
+        return self.render(
+            'netbox_inventory_plus/inc/asset_info.html', extra_context=context
+        )
+
+
+class AssetLocationCounts(PluginTemplateExtension):
+    def right_page(self):
+        object = self.context.get('object')
+        user = self.context['request'].user
+        assets_qs = Asset.objects.restrict(user, 'view')
+        count_installed = query_located(
+            assets_qs, self.location_type, [object.pk], assets_shown='installed'
+        ).count()
+        count_stored = query_located(
+            assets_qs, self.location_type, [object.pk], assets_shown='stored'
+        ).count()
+        context = {
+            'asset_stats': [
+                {
+                    'label': 'Installed',
+                    'filter_field': f'installed_{self.location_type}_id',
+                    'count': count_installed,
+                },
+                {
+                    'label': 'Stored',
+                    'filter_field': f'storage_{self.location_type}_id',
+                    'count': count_stored,
+                },
+                {
+                    'label': 'Total',
+                    'filter_field': f'located_{self.location_type}_id',
+                    'count': count_installed + count_stored,
+                },
+            ],
+        }
+        return self.render(
+            'netbox_inventory_plus/inc/asset_stats_counts.html', extra_context=context
+        )
+
+
+class DeviceAssetInfo(AssetInfoExtension):
+    models = ['dcim.device']
+    kind = 'device'
+
+
+class ModuleAssetInfo(AssetInfoExtension):
+    models = ['dcim.module']
+    kind = 'module'
+
+
+class InventoryItemAssetInfo(AssetInfoExtension):
+    models = ['dcim.inventoryitem']
+    kind = 'inventoryitem'
+
+
+class RackAssetInfo(AssetInfoExtension):
+    models = ['dcim.rack']
+    kind = 'rack'
+
+
+class ManufacturerAssetCounts(PluginTemplateExtension):
+    models = ['dcim.manufacturer']
+
+    def right_page(self):
+        object = self.context.get('object')
+        user = self.context['request'].user
+        count_device = (
+            Asset.objects.restrict(user, 'view')
+            .filter(device_type__manufacturer=object)
+            .count()
+        )
+        count_module = (
+            Asset.objects.restrict(user, 'view')
+            .filter(module_type__manufacturer=object)
+            .count()
+        )
+        count_inventoryitem = (
+            Asset.objects.restrict(user, 'view')
+            .filter(inventoryitem_type__manufacturer=object)
+            .count()
+        )
+        context = {
+            'asset_stats': [
+                {
+                    'label': 'Device',
+                    'filter_field': 'manufacturer_id',
+                    'extra_filter': '&kind=device',
+                    'count': count_device,
+                },
+                {
+                    'label': 'Module',
+                    'filter_field': 'manufacturer_id',
+                    'extra_filter': '&kind=module',
+                    'count': count_module,
+                },
+                {
+                    'label': 'Inventory Item',
+                    'filter_field': 'manufacturer_id',
+                    'extra_filter': '&kind=inventoryitem',
+                    'count': count_inventoryitem,
+                },
+                {
+                    'label': 'Total',
+                    'filter_field': 'manufacturer_id',
+                    'count': count_device + count_module + count_inventoryitem,
+                },
+            ],
+        }
+        return self.render(
+            'netbox_inventory_plus/inc/asset_stats_counts.html', extra_context=context
+        )
+
+
+class SiteAssetCounts(AssetLocationCounts):
+    models = ['dcim.site']
+    location_type = 'site'
+
+
+class LocationAssetCounts(AssetLocationCounts):
+    models = ['dcim.location']
+    location_type = 'location'
+
+
+class RackAssetCounts(PluginTemplateExtension):
+    # rack cannot have stored assets so we can't use AssetLocationStats
+    models = ['dcim.rack']
+
+    def right_page(self):
+        object = self.context.get('object')
+        user = self.context['request'].user
+        assets_qs = Asset.objects.restrict(user, 'view')
+        assets_qs = query_located(assets_qs, 'rack', [object.pk])
+        context = {
+            'asset_stats': [
+                {
+                    'label': 'Installed',
+                    'filter_field': 'installed_rack_id',
+                    'count': assets_qs.count(),
+                },
+            ],
+        }
+        return self.render(
+            'netbox_inventory_plus/inc/asset_stats_counts.html', extra_context=context
+        )
+
+
+class TenantAssetCounts(PluginTemplateExtension):
+    models = ['tenancy.tenant']
+
+    def right_page(self):
+        object = self.context.get('object')
+        user = self.context['request'].user
+        context = {
+            'asset_stats': [
+                {
+                    'label': 'Assigned',
+                    'filter_field': 'tenant_id',
+                    'count': Asset.objects.restrict(user, 'view')
+                    .filter(tenant=object)
+                    .count(),
+                },
+                {
+                    'label': 'Owned',
+                    'filter_field': 'owner_id',
+                    'count': Asset.objects.restrict(user, 'view')
+                    .filter(owner=object)
+                    .count(),
+                },
+            ],
+        }
+        return self.render(
+            'netbox_inventory_plus/inc/asset_stats_counts.html', extra_context=context
+        )
+
+
+class ContactAssetCounts(PluginTemplateExtension):
+    models = ['tenancy.contact']
+
+    def right_page(self):
+        object = self.context.get('object')
+        user = self.context['request'].user
+        context = {
+            'asset_stats': [
+                {
+                    'label': 'Assigned',
+                    'filter_field': 'contact_id',
+                    'count': Asset.objects.restrict(user, 'view')
+                    .filter(contact=object)
+                    .count(),
+                },
+            ],
+        }
+        return self.render(
+            'netbox_inventory_plus/inc/asset_stats_counts.html', extra_context=context
+        )
+
+
+template_extensions = (
+    DeviceAssetInfo,
+    ModuleAssetInfo,
+    InventoryItemAssetInfo,
+    RackAssetInfo,
+    ManufacturerAssetCounts,
+    SiteAssetCounts,
+    LocationAssetCounts,
+    RackAssetCounts,
+    TenantAssetCounts,
+    ContactAssetCounts,
+)
