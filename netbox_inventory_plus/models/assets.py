@@ -608,6 +608,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         stored_status = get_status_for('stored')
         ordered_status = get_status_for('ordered')
         planned_status = get_status_for('planned')
+        transit_status = get_status_for('transit')
 
         # Manual/Bulk Assignment: Status has been set manually or Asset is part of bulk assignment;
         # do not change it
@@ -618,6 +619,16 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         if used_status and new_hw:
             self.status = used_status
             return
+
+        # Transit: Asset is in transit
+        if self.transfer and not new_hw:
+            if transit_status and self.transfer.status == 'pickedup':
+                self.status = transit_status
+                return
+            
+            if stored_status and self.transfer.status == 'delivered':
+                self.status = stored_status
+                return
 
         # Stored: Unassigned but fully delivered and purchased
         if stored_status and self.delivery and not new_hw:
@@ -638,11 +649,23 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         update if the assigned Delivery changes.
         """
         old_delivery = get_prechange_field(self, 'delivery')
+        old_transfer = get_prechange_field(self, 'transfer')
+
         new_delivery = self.delivery
+        new_transfer = self.transfer
         new_hw = getattr(self, self.kind)
 
+        if new_hw:
+            return
+
+        if old_transfer != new_transfer:
+            if new_transfer and new_transfer.status == 'delivered':
+                self.storage_site = new_transfer.site
+                self.storage_location = new_transfer.location
+                return
+
         if old_delivery != new_delivery:
-            if new_delivery and not new_hw:
+            if new_delivery:
                 self.storage_site = new_delivery.delivery_site
                 self.storage_location = new_delivery.delivery_location
 

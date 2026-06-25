@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netbox-inventory-plus"
-version = "3.8.0"
+version = "3.8.1"
 authors = [
   { name="Sol1", email="support@sol1.com.au" },
 ]

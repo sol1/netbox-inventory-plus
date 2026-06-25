@@ -155,6 +155,18 @@ class Transfer(NetBoxModel):
         self.validate_dates()
         return super().clean()
 
+    def save(self, *args, **kwargs):
+        old_status = None
+
+        if self.pk:
+            old_status = Transfer.objects.filter(pk=self.pk).values_list('status', flat=True).first()
+        
+        super().save(*args, **kwargs)
+        if old_status != self.status:
+            for asset in self.get_assets():
+                asset.full_clean()
+                asset.save()
+
     def validate_dates(self):
         """
         Ensure that the received_date is after the pickup_date.
