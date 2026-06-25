@@ -160,7 +160,7 @@ class Transfer(NetBoxModel):
 
         if self.pk:
             old_status = Transfer.objects.filter(pk=self.pk).values_list('status', flat=True).first()
-        
+
         super().save(*args, **kwargs)
         if old_status != self.status:
             for asset in self.get_assets():

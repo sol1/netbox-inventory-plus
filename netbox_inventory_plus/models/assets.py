@@ -625,7 +625,7 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
             if transit_status and self.transfer.status == 'pickedup':
                 self.status = transit_status
                 return
-            
+
             if stored_status and self.transfer.status == 'delivered':
                 self.status = stored_status
                 return
