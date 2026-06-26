@@ -34,7 +34,7 @@ REDIS = {
 
 SECRET_KEY = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-API_TOKEN_PEPPERS = {'default': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'}
+API_TOKEN_PEPPERS = {'0': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'}
 
 PLUGINS = [
     'netbox_inventory_plus',
