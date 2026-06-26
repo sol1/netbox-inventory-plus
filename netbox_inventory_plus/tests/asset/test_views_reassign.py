@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
+from django.urls import reverse
 
 from core.choices import ObjectChangeActionChoices
 from core.models import ObjectChange, ObjectType
@@ -150,8 +151,8 @@ class AssetReassignBase:
         )
 
     def _get_url(self, _, instance):
-        hardware_kind = self.model._meta.model_name
-        return f'/plugins/inventory/assets/{hardware_kind}/{self.tested_hardware.pk}/reassign/'
+        view_name = f'plugins:netbox_inventory_plus:asset_{self.model._meta.model_name}_reassign'
+        return reverse(view_name, kwargs={'pk': self.tested_hardware.pk})
 
     @override_settings(EXEMPT_VIEW_PERMISSIONS=['*'])
     @override_settings(PLUGINS_CONFIG=CONFIG_SYNC_ON)

@@ -48,7 +48,7 @@ class InventoryItemGroupView(generic.ObjectView):
             )
         )
         # make table of assets
-        asset_table = tables.AssetTable(assets, user=request.user)
+        asset_table = tables.AssetTable(assets)
         asset_table.columns.hide('kind')
         asset_table.configure(request)
 

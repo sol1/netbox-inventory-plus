@@ -1,4 +1,5 @@
 from django.test import override_settings
+from django.urls import reverse
 
 from dcim.models import (
     Device,
@@ -109,10 +110,8 @@ class AssetCreateHwBase:
         )
 
     def _get_url(self, _):
-        hardware_kind = self.tested_asset.kind
-        if hardware_kind == 'inventoryitem':
-            hardware_kind = 'inventory-item'
-        return f'/plugins/inventory/assets/{hardware_kind}/create/?asset_id={self.tested_asset.pk}'
+        view_name = f'plugins:netbox_inventory_plus:asset_{self.tested_asset.kind}_create'
+        return f'{reverse(view_name)}?asset_id={self.tested_asset.pk}'
 
     @override_settings(EXEMPT_VIEW_PERMISSIONS=['*'])
     @override_settings(PLUGINS_CONFIG=CONFIG_SYNC_ON)
