@@ -4,8 +4,9 @@ import django.db.migrations.operations.special
 import django.db.models.deletion
 import mptt.fields
 import taggit.managers
-import utilities.json
 from django.db import migrations, models
+
+import utilities.json
 
 
 def rebuild_tree(apps, schema_editor):
