@@ -2,10 +2,11 @@
 
 import django.db.models.deletion
 import mptt.fields
-import netbox.models.deletion
 import taggit.managers
-import utilities.json
 from django.db import migrations, models
+
+import netbox.models.deletion
+import utilities.json
 
 
 class Migration(migrations.Migration):
