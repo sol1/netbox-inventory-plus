@@ -95,7 +95,7 @@ class AssetDeviceAssignForm(AssetAssignMixin, NetBoxModelForm):
         required=False,
         help_text='Set to empty to unassign asset from device',
         widget=APISelect(
-            api_url='/api/plugins/inventory/dcim/devices/',
+            api_url='/api/plugins/inventory_plus/dcim/devices/',
             attrs={
                 'data-static-params': '[{"queryParam":"has_asset_assigned","queryValue":"false"}]',
             },
@@ -133,7 +133,7 @@ class AssetModuleAssignForm(AssetAssignMixin, NetBoxModelForm):
         required=False,
         help_text='Set to empty to unassign asset from module',
         widget=APISelect(
-            api_url='/api/plugins/inventory/dcim/modules/',
+            api_url='/api/plugins/inventory_plus/dcim/modules/',
             attrs={
                 'data-static-params': '[{"queryParam":"has_asset_assigned","queryValue":"false"}]',
             },
@@ -177,7 +177,7 @@ class AssetInventoryItemAssignForm(AssetAssignMixin, NetBoxModelForm):
         required=False,
         help_text='Set to empty to unassign asset from inventory item',
         widget=APISelect(
-            api_url='/api/plugins/inventory/dcim/inventory-items/',
+            api_url='/api/plugins/inventory_plus/dcim/inventory-items/',
             attrs={
                 'data-static-params': '[{"queryParam":"has_asset_assigned","queryValue":"false"}]',
             },

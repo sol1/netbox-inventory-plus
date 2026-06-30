@@ -737,8 +737,8 @@ class Asset(NetBoxModel, ImageAttachmentsMixin):
         return AssetStatusChoices.colors.get(self.status)
 
     def __str__(self):
-        if self.serial:
-            return f'{self.hardware_type} {self.serial}'
+        if self.asset_tag:
+            return f'{self.hardware_type} ({self.asset_tag})'
         else:
             return f'{self.hardware_type} (id:{self.id})'
 
